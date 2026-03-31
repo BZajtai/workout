@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Gym</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@300;400;500&display=swap');
+
+  /* ── Design tokens ── */
+  :root {
+    --bg:        #f5f4f1;
+    --surface:   #ffffff;
+    --border:    #e4e2dc;
+    --border-lt: #eeece7;
+    --ink:       #1a1a18;
+    --ink-2:     #6b6860;
+    --ink-3:     #a8a49e;
+    --accent:    #1a1a18;
+    --accent-fg: #f5f4f1;
+    --danger:    #c0392b;
+    --radius:    12px;
+    --radius-sm: 8px;
+    --tab-h:     56px;
+    --safe-b:    env(safe-area-inset-bottom, 0px);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Lora', Georgia, serif;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior: none;
+  }
+
+  /* ── Layout ── */
+  #app {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    max-width: 480px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .screen {
+    display: none;
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: calc(var(--tab-h) + var(--safe-b) + 16px);
+  }
+  .screen.active { display: block; }
+
+  /* ── Tab bar ── */
+  #tabbar {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    height: calc(var(--tab-h) + var(--safe-b));
+    padding-bottom: var(--safe-b);
+    background: rgba(245,244,241,0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    z-index: 100;
+  }
+  .tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: var(--ink-3);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    transition: color 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tab.active { color: var(--ink); }
+  .tab svg { width: 22px; height: 22px; stroke-width: 1.5; }
+
+  /* ── Page header ── */
+  .page-header {
+    padding: 20px 20px 12px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: rgba(245,244,241,0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 10;
+    border-bottom: 1px solid var(--border-lt);
+  }
+  .page-title {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .page-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-2);
+    letter-spacing: 0.02em;
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 16px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--accent);
+    background: var(--accent);
+    color: var(--accent-fg);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn:active { opacity: 0.7; }
+  .btn.ghost {
+    background: transparent;
+    color: var(--ink);
+    border-color: var(--border);
+  }
+  .btn.danger {
+    background: transparent;
+    color: var(--danger);
+    border-color: var(--danger);
+  }
+  .btn.small { padding: 6px 12px; font-size: 11px; }
+  .btn svg { width: 14px; height: 14px; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  /* ── Section label ── */
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    padding: 20px 20px 8px;
+  }
+
+  /* ──────────────────────────────
+     LOG SCREEN
+  ────────────────────────────── */
+  #session-banner {
+    margin: 16px 20px 0;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  #session-banner .session-info .label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  #session-banner .session-info .date {
+    font-size: 15px;
+    font-weight: 500;
+    margin-top: 2px;
+  }
+  #session-banner .banner-actions { display: flex; gap: 8px; }
+
+  /* Exercise picker */
+  #exercise-picker-wrap {
+    margin: 12px 20px 0;
+  }
+  .picker-row {
+    display: flex;
+    gap: 8px;
+  }
+  .picker-row select {
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    color: var(--ink);
+    font-family: 'Lora', serif;
+    font-size: 14px;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6860' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    cursor: pointer;
+  }
+
+  /* Exercise log rows */
+  .exercise-log-list {
+    margin: 12px 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .exercise-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .exercise-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border-lt);
+  }
+  .ex-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .ex-icon img { width: 100%; height: 100%; object-fit: cover; border-radius: 7px; }
+  .ex-name {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .ex-category {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    letter-spacing: 0.05em;
+  }
+  .ex-remove {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--ink-3);
+    padding: 4px;
+    display: flex;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .ex-remove svg { width: 16px; height: 16px; }
+
+  /* Input row: sets × reps @ kg */
+  .exercise-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+    border-bottom: 1px solid var(--border-lt);
+  }
+  .input-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 8px;
+    border-right: 1px solid var(--border-lt);
+  }
+  .input-cell:last-child { border-right: none; }
+  .input-cell label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .input-cell input {
+    width: 100%;
+    text-align: center;
+    border: none;
+    background: transparent;
+    font-family: 'DM Mono', monospace;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--ink);
+    outline: none;
+    padding: 0;
+  }
+  .input-cell input::placeholder { color: var(--ink-3); }
+
+  /* History within card */
+  .ex-history-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .ex-history-toggle .last-session {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-2);
+  }
+  .ex-history-toggle .toggle-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .ex-history-toggle .toggle-btn svg { width: 12px; height: 12px; transition: transform 0.2s; }
+  .ex-history-toggle .toggle-btn.open svg { transform: rotate(180deg); }
+
+  .ex-history-expanded {
+    display: none;
+    padding: 0 14px 10px;
+  }
+  .ex-history-expanded.open { display: block; }
+  .history-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    border-top: 1px solid var(--border-lt);
+  }
+  .history-row .h-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+  }
+  .history-row .h-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-2);
+  }
+
+  /* Finish session */
+  #finish-wrap {
+    margin: 16px 20px 0;
+  }
+  #finish-wrap .btn { width: 100%; padding: 14px; font-size: 13px; }
+
+  /* ──────────────────────────────
+     HISTORY SCREEN
+  ────────────────────────────── */
+  .history-session-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin: 0 20px;
+    overflow: hidden;
+  }
+  .history-session-card + .history-session-card { margin-top: 12px; }
+
+  .hs-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--border-lt);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .hs-date {
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .hs-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    margin-top: 2px;
+  }
+  .hs-chevron { color: var(--ink-3); transition: transform 0.2s; }
+  .hs-chevron svg { width: 16px; height: 16px; }
+  .hs-chevron.open { transform: rotate(180deg); }
+
+  .hs-body { display: none; }
+  .hs-body.open { display: block; }
+
+  .hs-exercise-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-top: 1px solid var(--border-lt);
+  }
+  .hs-exercise-row .ex-icon { width: 30px; height: 30px; font-size: 15px; }
+  .hs-ex-name { flex: 1; font-size: 13px; }
+  .hs-ex-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+
+  .hs-footer {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border-lt);
+    justify-content: flex-end;
+  }
+
+  /* backup bar */
+  .backup-bar {
+    display: flex;
+    gap: 8px;
+    padding: 16px 20px 8px;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  /* ──────────────────────────────
+     EMPTY STATES
+  ────────────────────────────── */
+  .empty {
+    text-align: center;
+    padding: 48px 32px;
+    color: var(--ink-3);
+    font-size: 14px;
+    font-style: italic;
+  }
+
+  /* ──────────────────────────────
+     MODAL
+  ────────────────────────────── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,26,24,0.4);
+    z-index: 200;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: var(--radius) var(--radius) 0 0;
+    width: 100%;
+    max-width: 480px;
+    padding: 20px 20px calc(20px + var(--safe-b));
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(40px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+  .modal-title {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  .modal-body { color: var(--ink-2); font-size: 14px; line-height: 1.6; margin-bottom: 20px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+  /* textarea for import */
+  textarea.import-area {
+    width: 100%;
+    height: 120px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    resize: none;
+    outline: none;
+    background: var(--bg);
+    color: var(--ink);
+    margin-bottom: 12px;
+  }
+
+  /* toast */
+  #toast {
+    position: fixed;
+    bottom: calc(var(--tab-h) + var(--safe-b) + 12px);
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    background: var(--ink);
+    color: var(--accent-fg);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    padding: 9px 18px;
+    border-radius: 20px;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 300;
+    letter-spacing: 0.02em;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── util ── */
+  .divider { height: 1px; background: var(--border-lt); margin: 0 20px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ── LOG SCREEN ── -->
+  <div id="screen-log" class="screen active">
+    <div class="page-header">
+      <div class="page-title">Log</div>
+      <div class="page-sub" id="log-date-sub"></div>
+    </div>
+
+    <div id="session-banner">
+      <div class="session-info">
+        <div class="label">Session</div>
+        <div class="date" id="banner-date">—</div>
+      </div>
+      <div class="banner-actions">
+        <button class="btn ghost small" id="btn-clear-session">Clear</button>
+      </div>
+    </div>
+
+    <div id="exercise-picker-wrap">
+      <div class="picker-row">
+        <select id="exercise-select">
+          <option value="">Add an exercise…</option>
+        </select>
+        <button class="btn" id="btn-add-exercise">Add</button>
+      </div>
+    </div>
+
+    <div class="exercise-log-list" id="exercise-log-list"></div>
+
+    <div id="finish-wrap">
+      <button class="btn" id="btn-finish-session">Save Session</button>
+    </div>
+  </div>
+
+  <!-- ── HISTORY SCREEN ── -->
+  <div id="screen-history" class="screen">
+    <div class="page-header">
+      <div class="page-title">History</div>
+      <div class="page-sub" id="history-count-sub"></div>
+    </div>
+    <div class="backup-bar">
+      <button class="btn ghost small" id="btn-import">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Import
+      </button>
+      <button class="btn small" id="btn-export">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+        Export
+      </button>
+    </div>
+    <div id="history-list"></div>
+  </div>
+
+  <!-- ── TAB BAR ── -->
+  <nav id="tabbar">
+    <button class="tab active" data-tab="log">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8M12 8v8"/></svg>
+      Log
+    </button>
+    <button class="tab" data-tab="history">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      History
+    </button>
+  </nav>
+</div>
+
+<!-- ── MODALS ── -->
+<div class="modal-overlay" id="modal-finish">
+  <div class="modal">
+    <div class="modal-title">Save session?</div>
+    <div class="modal-body" id="modal-finish-body">Save this session to history.</div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="modal-finish-cancel">Cancel</button>
+      <button class="btn" id="modal-finish-confirm">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-clear">
+  <div class="modal">
+    <div class="modal-title">Clear session?</div>
+    <div class="modal-body">This will discard all entries in the current session. Cannot be undone.</div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="modal-clear-cancel">Cancel</button>
+      <button class="btn danger" id="modal-clear-confirm">Clear</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-delete-session">
+  <div class="modal">
+    <div class="modal-title">Delete session?</div>
+    <div class="modal-body">This session will be permanently removed from history.</div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="modal-del-cancel">Cancel</button>
+      <button class="btn danger" id="modal-del-confirm">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-import">
+  <div class="modal">
+    <div class="modal-title">Import backup</div>
+    <div class="modal-body">Paste your exported JSON below. This will <strong>replace</strong> all existing history.</div>
+    <textarea class="import-area" id="import-textarea" placeholder='{"sessions": [...]}'></textarea>
+    <div class="modal-actions">
+      <button class="btn ghost" id="modal-import-cancel">Cancel</button>
+      <button class="btn" id="modal-import-confirm">Import</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   CONFIGURATION — edit this section freely
+   Each exercise: { id, name, category, icon }
+   icon: an emoji string OR a URL/path to an image
+═══════════════════════════════════════════════ */
+const EXERCISES = [
+  // ── Chest ──
+  { id: "converging_bench_press", name: "Converging Bench Press", category: "Chest",     icon: "icons/bench-press.png" },
+  { id: "pushups",                name: "Pushups",                category: "Chest",     icon: "icons/push-up.png",         type: "count" },
+  // ── Back ──
+  { id: "diverging_lat_pulldown", name: "Diverging Lat Pulldown", category: "Back",      icon: "icons/lat-pulldown.png" },
+  { id: "lat_pulldown",           name: "Lat Pulldown",           category: "Back",      icon: "icons/lat-pulldown.png" },
+  { id: "rear_delt",              name: "Rear Delt/Pec Fly",      category: "Back",      icon: "icons/pec-fly.png" },
+  { id: "seated_row",             name: "Seated Row",             category: "Back",      icon: "icons/seated-row.png" },
+  // ── Shoulders ──
+  { id: "ohp",                    name: "Shoulder Press",         category: "Shoulders", icon: "icons/shoulder-press.png" },
+  // ── Arms ──
+  { id: "bicep_curl",             name: "Biceps Curl",            category: "Arms",      icon: "icons/biceps.png" },
+  { id: "tricep_pulley",          name: "Tricep Pulley",          category: "Arms",      icon: "icons/triceps-pulley.png" },
+  // ── Legs ──
+  { id: "leg_press",              name: "Leg Press",              category: "Legs",      icon: "icons/leg-press.png" },
+  { id: "abductor_press",         name: "Abductor Press",         category: "Legs",      icon: "icons/abductor.png" },
+  { id: "adductor_press",         name: "Adductor Press",         category: "Legs",      icon: "icons/adductor.png" },
+  { id: "squats",                 name: "Squats",                 category: "Legs",      icon: "icons/squats.png",          type: "count" },
+  { id: "lunges",                 name: "Lunges",                 category: "Legs",      icon: "icons/lunges.png",          type: "count" },
+  // ── Core ──
+  { id: "plank",                  name: "Plank",                  category: "Core",      icon: "icons/plank.png",           type: "timed" },
+  // ── Cardio ──
+  { id: "rowing",                 name: "Rowing",                 category: "Cardio",    icon: "icons/rowing-machine.png" },
+  { id: "elliptical",             name: "Elliptical",             category: "Cardio",    icon: "icons/elliptical.png" },
+  { id: "treadmill",              name: "Treadmill",              category: "Cardio",    icon: "icons/treadmill.png" },
+];
+/* ═══════════════════════════════════════════════ */
+
+/* ── Storage ── */
+const SK = { sessions: 'gym_sessions', current: 'gym_current_session' };
+
+function getSessions() {
+  try { return JSON.parse(localStorage.getItem(SK.sessions)) || []; } catch { return []; }
+}
+function saveSessions(s) { localStorage.setItem(SK.sessions, JSON.stringify(s)); }
+function getCurrent() {
+  try { return JSON.parse(localStorage.getItem(SK.current)) || { date: todayStr(), exercises: {} }; } catch {
+    return { date: todayStr(), exercises: {} };
+  }
+}
+function saveCurrent(c) { localStorage.setItem(SK.current, JSON.stringify(c)); }
+
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+function fmtDate(iso) {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+/* ── App state ── */
+let current = getCurrent();
+// If stored session is from a different day, archive it first
+if (current.date !== todayStr() && Object.keys(current.exercises).length > 0) {
+  const sessions = getSessions();
+  sessions.unshift(current);
+  saveSessions(sessions);
+  current = { date: todayStr(), exercises: {} };
+  saveCurrent(current);
+}
+
+const exerciseMap = Object.fromEntries(EXERCISES.map(e => [e.id, e]));
+
+/* ── Tab navigation ── */
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.screen').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('screen-' + t.dataset.tab).classList.add('active');
+    if (t.dataset.tab === 'history') renderHistory();
+  });
+});
+
+/* ── Toast ── */
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+/* ── Modal helpers ── */
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+/* ═══════════════════════════════════════
+   LOG SCREEN
+═══════════════════════════════════════ */
+function renderLogScreen() {
+  document.getElementById('banner-date').textContent = fmtDate(current.date);
+  renderExerciseList();
+}
+
+function buildExerciseSelect() {
+  const sel = document.getElementById('exercise-select');
+  // Group by category
+  const categories = {};
+  EXERCISES.forEach(e => {
+    if (!categories[e.category]) categories[e.category] = [];
+    categories[e.category].push(e);
+  });
+  sel.innerHTML = '<option value="">Add an exercise…</option>';
+  Object.entries(categories).forEach(([cat, exs]) => {
+    const og = document.createElement('optgroup');
+    og.label = cat;
+    exs.forEach(e => {
+      const o = document.createElement('option');
+      o.value = e.id;
+      o.textContent = e.name;
+      og.appendChild(o);
+    });
+    sel.appendChild(og);
+  });
+}
+
+function renderExerciseList() {
+  const list = document.getElementById('exercise-log-list');
+  const ids = Object.keys(current.exercises);
+  if (ids.length === 0) {
+    list.innerHTML = '<div class="empty">No exercises yet — add one above.</div>';
+    return;
+  }
+  list.innerHTML = '';
+  ids.forEach(id => renderExerciseCard(id, list));
+}
+
+function getExHistory(exerciseId) {
+  // Returns array of {date, ...data} newest first, preserving entries array for count/timed
+  return getSessions()
+    .filter(s => s.exercises && s.exercises[exerciseId])
+    .map(s => ({ date: s.date, ...s.exercises[exerciseId] }))
+    .slice(0, 6);
+}
+
+function renderExerciseCard(id, container) {
+  const ex = exerciseMap[id];
+  if (!ex) return;
+  const data = current.exercises[id] || {};
+  const history = getExHistory(id);
+
+  const card = document.createElement('div');
+  card.className = 'exercise-card';
+  card.dataset.id = id;
+
+  // Icon
+  const iconHtml = ex.icon.startsWith('http') || ex.icon.startsWith('/') || ex.icon.startsWith('data:') || ex.icon.startsWith('icons/')
+    ? `<img src="${ex.icon}" alt="">`
+    : ex.icon;
+
+  const isTimed = ex.category === 'Cardio' || ex.type === 'timed';
+  const isCount = ex.type === 'count';
+
+  function fmtVal(h) {
+    if (isTimed) return h.duration || '—';
+    if (isCount) {
+      const parts = [];
+      if (h.sets && h.reps) parts.push(`${h.sets}×${h.reps}`);
+      else if (h.sets) parts.push(`${h.sets} sets`);
+      else if (h.reps) parts.push(`${h.reps} reps`);
+      return parts.length ? parts.join(' ') : '—';
+    }
+    const parts = [];
+    if (h.sets && h.reps) parts.push(`${h.sets}×${h.reps}`);
+    else if (h.sets) parts.push(`${h.sets} sets`);
+    else if (h.reps) parts.push(`${h.reps} reps`);
+    if (h.weight) parts.push(`${h.weight}kg`);
+    return parts.length ? parts.join(' @ ') : '—';
+  }
+
+  // For count/timed: entries stored as array; weighted: single object
+  function getEntries(h) {
+    if ((isTimed || isCount) && Array.isArray(h.entries)) return h.entries;
+    return [h]; // weighted or legacy
+  }
+
+  // Last session text
+  const lastStr = history.length > 0
+    ? getEntries(history[0]).map(fmtVal).join(', ')
+    : 'No history';
+
+  // Older history rows
+  const historyRows = history.map((h, i) => `
+    <div class="history-row" ${i === 0 ? 'style="display:none"' : ''}>
+      <span class="h-date">${fmtDate(h.date)}</span>
+      <span class="h-val">${getEntries(h).map(fmtVal).join(', ')}</span>
+    </div>`).join('');
+
+  const inputsHtml = isTimed
+    ? `<div class="exercise-inputs" style="grid-template-columns:1fr">
+        <div class="input-cell">
+          <label>Duration</label>
+          <input type="text" inputmode="numeric" placeholder="—" data-field="duration" value="${data.duration || ''}" style="font-size:20px">
+        </div>
+      </div>`
+    : isCount
+    ? `<div class="exercise-inputs" style="grid-template-columns:1fr 1fr">
+        <div class="input-cell">
+          <label>Sets</label>
+          <input type="number" inputmode="numeric" min="1" placeholder="—" data-field="sets" value="${data.sets || ''}">
+        </div>
+        <div class="input-cell">
+          <label>Reps</label>
+          <input type="number" inputmode="numeric" min="1" placeholder="—" data-field="reps" value="${data.reps || ''}">
+        </div>
+      </div>`
+    : `<div class="exercise-inputs">
+        <div class="input-cell">
+          <label>Sets</label>
+          <input type="number" inputmode="numeric" min="1" placeholder="—" data-field="sets" value="${data.sets || ''}">
+        </div>
+        <div class="input-cell">
+          <label>Reps</label>
+          <input type="number" inputmode="numeric" min="1" placeholder="—" data-field="reps" value="${data.reps || ''}">
+        </div>
+        <div class="input-cell">
+          <label>Weight kg</label>
+          <input type="number" inputmode="decimal" min="0" step="0.5" placeholder="—" data-field="weight" value="${data.weight || ''}">
+        </div>
+      </div>`;
+
+  card.innerHTML = `
+    <div class="exercise-card-header">
+      <div class="ex-icon">${iconHtml}</div>
+      <div style="flex:1">
+        <div class="ex-name">${ex.name}</div>
+        <div class="ex-category">${ex.category}</div>
+      </div>
+      <button class="ex-remove" data-remove="${id}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    ${inputsHtml}
+    <div class="ex-history-toggle">
+      <span class="last-session">${history.length > 0 ? 'Last: ' + lastStr : 'No history'}</span>
+      ${history.length > 1 ? `<span class="toggle-btn" data-hist="${id}">
+        History <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </span>` : ''}
+    </div>
+    ${history.length > 1 ? `<div class="ex-history-expanded" id="hist-${id}">${historyRows}</div>` : ''}
+  `;
+
+  // Inputs → save to current
+  card.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      if (!current.exercises[id]) current.exercises[id] = {};
+      current.exercises[id][inp.dataset.field] = inp.value;
+      saveCurrent(current);
+    });
+  });
+
+  // Remove button
+  card.querySelector('[data-remove]').addEventListener('click', () => {
+    delete current.exercises[id];
+    saveCurrent(current);
+    renderExerciseList();
+  });
+
+  // History toggle
+  const togBtn = card.querySelector('[data-hist]');
+  if (togBtn) {
+    togBtn.addEventListener('click', () => {
+      const expanded = document.getElementById('hist-' + id);
+      const isOpen = expanded.classList.toggle('open');
+      togBtn.classList.toggle('open', isOpen);
+      // Show/hide all rows (skip index 0 — already shown as "Last session")
+      expanded.querySelectorAll('.history-row').forEach((r, i) => {
+        r.style.display = isOpen ? '' : (i === 0 ? 'none' : '');
+      });
+    });
+  }
+
+  container.appendChild(card);
+}
+
+/* Add exercise */
+document.getElementById('btn-add-exercise').addEventListener('click', () => {
+  const sel = document.getElementById('exercise-select');
+  const id = sel.value;
+  if (!id) return;
+  if (current.exercises[id]) { toast('Already added'); return; }
+  current.exercises[id] = {};
+  saveCurrent(current);
+  sel.value = '';
+  renderExerciseList();
+});
+
+/* Clear session */
+document.getElementById('btn-clear-session').addEventListener('click', () => openModal('modal-clear'));
+document.getElementById('modal-clear-cancel').addEventListener('click', () => closeModal('modal-clear'));
+document.getElementById('modal-clear-confirm').addEventListener('click', () => {
+  current = { date: todayStr(), exercises: {} };
+  saveCurrent(current);
+  closeModal('modal-clear');
+  renderExerciseList();
+  toast('Session cleared');
+});
+
+/* Finish / save session */
+document.getElementById('btn-finish-session').addEventListener('click', () => {
+  const ids = Object.keys(current.exercises);
+  if (ids.length === 0) { toast('Nothing to save'); return; }
+  const count = ids.length;
+  document.getElementById('modal-finish-body').textContent =
+    `Save ${count} exercise${count > 1 ? 's' : ''} logged on ${fmtDate(current.date)}?`;
+  openModal('modal-finish');
+});
+document.getElementById('modal-finish-cancel').addEventListener('click', () => closeModal('modal-finish'));
+document.getElementById('modal-finish-confirm').addEventListener('click', () => {
+  const sessions = getSessions();
+  const idx = sessions.findIndex(s => s.date === current.date);
+  if (idx > -1) {
+    const existing = sessions[idx];
+    Object.keys(current.exercises).forEach(id => {
+      const ex = exerciseMap[id];
+      const isTimed = ex && (ex.category === 'Cardio' || ex.type === 'timed');
+      const isCount = ex && ex.type === 'count';
+      const incoming = current.exercises[id];
+      if (!existing.exercises[id]) {
+        // New exercise — count/timed wrap in entries array, weighted as-is
+        existing.exercises[id] = (isTimed || isCount)
+          ? { entries: [{ ...incoming }] }
+          : { ...incoming };
+      } else if (isTimed || isCount) {
+        // Count/timed: append as a separate entry
+        const prev = existing.exercises[id];
+        const prevEntries = Array.isArray(prev.entries) ? prev.entries : [{ ...prev }];
+        existing.exercises[id] = { entries: [...prevEntries, { ...incoming }] };
+      } else {
+        // Weighted: add numeric fields together
+        const prev = existing.exercises[id];
+        const merged = { ...prev };
+        ['sets', 'reps', 'weight'].forEach(field => {
+          const a = parseFloat(prev[field]) || 0;
+          const b = parseFloat(incoming[field]) || 0;
+          if (a || b) merged[field] = String(a + b);
+        });
+        existing.exercises[id] = merged;
+      }
+    });
+    sessions[idx] = existing;
+  } else {
+    // New session — wrap count/timed in entries array
+    const sessionExercises = {};
+    Object.keys(current.exercises).forEach(id => {
+      const ex = exerciseMap[id];
+      const isTimed = ex && (ex.category === 'Cardio' || ex.type === 'timed');
+      const isCount = ex && ex.type === 'count';
+      sessionExercises[id] = (isTimed || isCount)
+        ? { entries: [{ ...current.exercises[id] }] }
+        : { ...current.exercises[id] };
+    });
+    sessions.unshift({ date: current.date, exercises: sessionExercises });
+  }
+  saveSessions(sessions);
+  current = { date: todayStr(), exercises: {} };
+  saveCurrent(current);
+  closeModal('modal-finish');
+  renderExerciseList();
+  toast('Session saved ✓');
+});
+
+/* ═══════════════════════════════════════
+   HISTORY SCREEN
+═══════════════════════════════════════ */
+let pendingDeleteIdx = null;
+
+function renderHistory() {
+  const sessions = getSessions();
+  const list = document.getElementById('history-list');
+  const sub = document.getElementById('history-count-sub');
+  sub.textContent = sessions.length + ' session' + (sessions.length !== 1 ? 's' : '');
+
+  if (sessions.length === 0) {
+    list.innerHTML = '<div class="empty">No sessions saved yet.</div>';
+    return;
+  }
+
+  list.innerHTML = '';
+
+  sessions.forEach((session, idx) => {
+    const ids = Object.keys(session.exercises || {});
+    const card = document.createElement('div');
+    card.className = 'history-session-card';
+
+    const exRows = ids.map(id => {
+      const ex = exerciseMap[id];
+      const d = session.exercises[id] || {};
+      if (!ex) return '';
+      const iconHtml = ex.icon.startsWith('http') || ex.icon.startsWith('/') || ex.icon.startsWith('data:') || ex.icon.startsWith('icons/')
+        ? `<img src="${ex.icon}" alt="">`
+        : ex.icon;
+      const isCardio = ex.category === 'Cardio' || ex.type === 'timed';
+      const isCount = ex.type === 'count';
+      function fmtEntry(e) {
+        if (isCardio) return e.duration || '—';
+        const parts = [];
+        if (e.sets && e.reps) parts.push(`${e.sets}×${e.reps}`);
+        else if (e.sets) parts.push(`${e.sets} sets`);
+        else if (e.reps) parts.push(`${e.reps} reps`);
+        if (!isCount && e.weight) parts.push(`${e.weight}kg`);
+        return parts.length ? parts.join(' @ ') : '—';
+      }
+      const entries = (isCardio || isCount) && Array.isArray(d.entries) ? d.entries : [d];
+      const val = entries.map(fmtEntry).join(', ');
+      return `
+        <div class="hs-exercise-row">
+          <div class="ex-icon">${iconHtml}</div>
+          <div class="hs-ex-name">${ex.name}</div>
+          <div class="hs-ex-val">${val}</div>
+        </div>`;
+    }).join('');
+
+    card.innerHTML = `
+      <div class="hs-header" data-idx="${idx}">
+        <div>
+          <div class="hs-date">${fmtDate(session.date)}</div>
+          <div class="hs-meta">${ids.length} exercise${ids.length !== 1 ? 's' : ''}</div>
+        </div>
+        <div class="hs-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 9l6 6 6-6"/></svg></div>
+      </div>
+      <div class="hs-body" id="hs-body-${idx}">
+        ${exRows || '<div class="empty" style="padding:16px">No exercises recorded.</div>'}
+        <div class="hs-footer">
+          <button class="btn ghost small danger" data-del="${idx}">Delete</button>
+        </div>
+      </div>
+    `;
+
+    // Toggle expand
+    card.querySelector('.hs-header').addEventListener('click', () => {
+      const body = document.getElementById('hs-body-' + idx);
+      const chev = card.querySelector('.hs-chevron');
+      body.classList.toggle('open');
+      chev.classList.toggle('open');
+    });
+
+    // Delete
+    card.querySelector('[data-del]').addEventListener('click', (e) => {
+      e.stopPropagation();
+      pendingDeleteIdx = idx;
+      openModal('modal-delete-session');
+    });
+
+    list.appendChild(card);
+  });
+}
+
+document.getElementById('modal-del-cancel').addEventListener('click', () => {
+  pendingDeleteIdx = null;
+  closeModal('modal-delete-session');
+});
+document.getElementById('modal-del-confirm').addEventListener('click', () => {
+  if (pendingDeleteIdx === null) return;
+  const sessions = getSessions();
+  sessions.splice(pendingDeleteIdx, 1);
+  saveSessions(sessions);
+  pendingDeleteIdx = null;
+  closeModal('modal-delete-session');
+  renderHistory();
+  toast('Session deleted');
+});
+
+/* ═══════════════════════════════════════
+   BACKUP — Export / Import
+═══════════════════════════════════════ */
+document.getElementById('btn-export').addEventListener('click', () => {
+  const data = { sessions: getSessions(), exportedAt: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `gym-backup-${todayStr()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Backup exported');
+});
+
+document.getElementById('btn-import').addEventListener('click', () => {
+  document.getElementById('import-textarea').value = '';
+  openModal('modal-import');
+});
+document.getElementById('modal-import-cancel').addEventListener('click', () => closeModal('modal-import'));
+document.getElementById('modal-import-confirm').addEventListener('click', () => {
+  try {
+    const raw = document.getElementById('import-textarea').value.trim();
+    const parsed = JSON.parse(raw);
+    if (!parsed.sessions || !Array.isArray(parsed.sessions)) throw new Error('Invalid format');
+    saveSessions(parsed.sessions);
+    closeModal('modal-import');
+    renderHistory();
+    toast(`Imported ${parsed.sessions.length} sessions`);
+  } catch {
+    toast('Invalid JSON — check format');
+  }
+});
+
+/* ── Init ── */
+buildExerciseSelect();
+renderLogScreen();
+</script>
+</body>
+</html>
