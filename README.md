@@ -35,19 +35,35 @@ Any exercise in the `Cardio` category automatically gets the timed input regardl
 ## Icon credits
 
 <a href="https://www.flaticon.com/free-icons/pec" title="pec icons">Pec icons created by Fahrul Oktaviana - Flaticon</a>
+
 <a href="https://www.flaticon.com/free-icons/rowing-pull" title="rowing pull icons">Rowing pull icons created by kerismaker - Flaticon</a>
+
 <a href="https://www.flaticon.com/free-icons/chest-press" title="chest press icons">Chest press icons created by kmg design - Flaticon</a>
+
 <a href="https://www.flaticon.com/free-icons/strength" title="strength icons">Strength icons created by gravisio - Flaticon</a>
+
 <a href="https://www.flaticon.com/free-icons/leg-press" title="leg press icons">Leg press icons created by agus raharjo - Flaticon</a>
+
 <a href="https://www.flaticon.com/free-icons/triceps" title="triceps icons">Triceps icons created by Freepik - Flaticon</a>
+
 <a href="https://www.flaticon.com/free-icons/chest-press" title="chest-press icons">Chest-press icons created by kmg design - Flaticon</a>
+
 <a href="https://www.flaticon.com/free-icons/push-ups" title="push ups icons">Push ups icons created by justicon - Flaticon</a>
+
 <a href="https://www.flaticon.com/free-icons/lat-pulldown" title="lat pulldown icons">Lat pulldown icons created by Freepik - Flaticon</a>
+
 <a href="https://www.flaticon.com/free-icons/pec" title="pec icons">Pec icons created by Fahrul Oktaviana - Flaticon</a>
+
 <a href="https://www.flaticon.com/free-icons/rowing-machine" title="rowing machine icons">Rowing machine icons created by kerismaker - Flaticon</a>
+
 <a href="https://www.flaticon.com/free-icons/muscle" title="muscle icons">Muscle icons created by justicon - Flaticon</a>
+
 <a href="https://www.flaticon.com/free-icons/lunges" title="lunges icons">Lunges icons created by Flat Icons - Flaticon</a>
+
 <a href="https://www.flaticon.com/free-icons/barbell" title="barbell icons">Barbell icons created by gravisio - Flaticon</a>
+
 <a href="https://www.flaticon.com/free-icons/plank" title="plank icons">Plank icons created by Freepik - Flaticon</a>
+
 <a href="https://www.flaticon.com/free-icons/elliptical" title="elliptical icons">Elliptical icons created by Flat Icons - Flaticon</a>
+
 <a href="https://www.flaticon.com/free-icons/workout" title="workout icons">Workout icons created by ultimatearm - Flaticon</a>
