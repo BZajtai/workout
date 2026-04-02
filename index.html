@@ -199,6 +199,21 @@
     font-size: 15px;
     font-weight: 500;
     margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+  #session-banner .session-info .date svg {
+    width: 13px; height: 13px;
+    color: var(--ink-3);
+    flex-shrink: 0;
+  }
+  #date-input-hidden {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0; height: 0;
   }
   #session-banner .banner-actions { display: flex; gap: 8px; }
 
@@ -727,7 +742,11 @@
     <div id="session-banner">
       <div class="session-info">
         <div class="label">Session</div>
-        <div class="date" id="banner-date">—</div>
+        <div class="date" id="banner-date">
+          —
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        </div>
+        <input type="date" id="date-input-hidden">
       </div>
       <div class="banner-actions">
         <button class="btn ghost small" id="btn-clear-session">Clear</button>
@@ -942,8 +961,9 @@ function fmtDate(iso) {
 
 /* ── App state ── */
 let current = getCurrent();
-// If stored session is from a different day, archive it first
-if (current.date !== todayStr() && Object.keys(current.exercises).length > 0) {
+// Only auto-archive if the stored date is in the past AND has exercises (unsaved leftover)
+// Don't wipe if user deliberately set a past date for this session
+if (current.date !== todayStr() && Object.keys(current.exercises).length > 0 && !current.datePicked) {
   const sessions = getSessions();
   sessions.unshift(current);
   saveSessions(sessions);
@@ -977,11 +997,29 @@ function toast(msg) {
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
+/* ── Session date picker ── */
+const bannerDate = document.getElementById('banner-date');
+const dateInput  = document.getElementById('date-input-hidden');
+
+bannerDate.addEventListener('click', () => {
+  dateInput.max = todayStr();
+  dateInput.showPicker ? dateInput.showPicker() : dateInput.click();
+});
+
+dateInput.addEventListener('change', () => {
+  if (!dateInput.value) return;
+  current.date = dateInput.value;
+  current.datePicked = true;
+  saveCurrent(current);
+  renderLogScreen();
+});
+
 /* ═══════════════════════════════════════
    LOG SCREEN
 ═══════════════════════════════════════ */
 function renderLogScreen() {
-  document.getElementById('banner-date').textContent = fmtDate(current.date);
+  document.getElementById('banner-date').childNodes[0].textContent = fmtDate(current.date) + ' ';
+  document.getElementById('date-input-hidden').value = current.date;
   renderExerciseList();
 }
 
@@ -1201,7 +1239,7 @@ document.getElementById('modal-clear-confirm').addEventListener('click', () => {
   current = { date: todayStr(), exercises: {} };
   saveCurrent(current);
   closeModal('modal-clear');
-  renderExerciseList();
+  renderLogScreen();
   toast('Session cleared');
 });
 
@@ -1265,7 +1303,7 @@ document.getElementById('modal-finish-confirm').addEventListener('click', () => 
   current = { date: todayStr(), exercises: {} };
   saveCurrent(current);
   closeModal('modal-finish');
-  renderExerciseList();
+  renderLogScreen();
   toast('Session saved ✓');
 });
 
