@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="apple-touch-icon" href="push-up.png">
+<link rel="apple-touch-icon" href="icons/push-up.png">
 <title>Gym</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@300;400;500&display=swap');
@@ -553,6 +553,14 @@
     font-weight: 500;
     letter-spacing: -0.01em;
   }
+  .cal-dow-row {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 2px;
+    padding: 0 16px 4px;
+    box-sizing: border-box;
+    width: 100%;
+  }
   .cal-grid {
     padding: 0 16px;
     box-sizing: border-box;
@@ -588,7 +596,7 @@
     -webkit-user-select: none;
     transition: background 0.12s;
   }
-  .cal-day.empty { cursor: default; }
+  .cal-day.empty { cursor: default; visibility: hidden; }
   .cal-day.today { color: var(--ink); font-weight: 500; }
   .cal-day.today::after {
     content: '';
@@ -616,7 +624,7 @@
   .cal-legend {
     display: flex;
     gap: 16px;
-    padding: 14px 20px 0;
+    padding: 14px 20px 16px;
     align-items: center;
   }
   .cal-legend-item {
@@ -772,6 +780,15 @@
     <div class="cal-legend">
       <div class="cal-legend-item"><div class="cal-legend-dot auto"></div>Session logged</div>
       <div class="cal-legend-item"><div class="cal-legend-dot manual"></div>Manually marked</div>
+    </div>
+    <div class="cal-dow-row">
+      <div class="cal-dow">M</div>
+      <div class="cal-dow">T</div>
+      <div class="cal-dow">W</div>
+      <div class="cal-dow">T</div>
+      <div class="cal-dow">F</div>
+      <div class="cal-dow">S</div>
+      <div class="cal-dow">S</div>
     </div>
     <div class="cal-grid" id="cal-grid"></div>
   </div>
@@ -1442,14 +1459,6 @@ function renderCalendar() {
 
   const grid = document.getElementById('cal-grid');
   grid.innerHTML = '';
-
-  // Day of week headers (Mon first)
-  ['M','T','W','T','F','S','S'].forEach(d => {
-    const el = document.createElement('div');
-    el.className = 'cal-dow';
-    el.textContent = d;
-    grid.appendChild(el);
-  });
 
   const firstDay = new Date(calYear, calMonth, 1);
   // Monday-first offset (0=Mon … 6=Sun)
