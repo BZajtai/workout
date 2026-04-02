@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Gym">
 <link rel="apple-touch-icon" href="icons/push-up.png">
-<title>Gym</title>
+<title>Workout</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@300;400;500&display=swap');
 
@@ -579,26 +580,33 @@
     text-transform: uppercase;
   }
   .cal-day {
-    aspect-ratio: 1;
+    position: relative;
     width: 100%;
     min-width: 0;
+    aspect-ratio: 1 / 1;
+    line-height: 0;
+    font-size: 0;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .cal-day-inner {
+    position: absolute;
+    inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
     font-family: 'DM Mono', monospace;
     font-size: 12px;
+    line-height: 1;
     color: var(--ink-2);
-    cursor: pointer;
-    position: relative;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-    -webkit-user-select: none;
     transition: background 0.12s;
   }
   .cal-day.empty { cursor: default; visibility: hidden; }
-  .cal-day.today { color: var(--ink); font-weight: 500; }
-  .cal-day.today::after {
+  .cal-day.today .cal-day-inner { color: var(--ink); font-weight: 500; }
+  .cal-day.today .cal-day-inner::after {
     content: '';
     position: absolute;
     bottom: 4px;
@@ -606,26 +614,25 @@
     border-radius: 50%;
     background: var(--ink-3);
   }
-  /* auto-marked: saved session */
-  .cal-day.marked-auto {
+  .cal-day.marked-auto .cal-day-inner {
     background: var(--ink);
     color: var(--accent-fg);
   }
-  .cal-day.marked-auto.today::after { background: var(--accent-fg); opacity: 0.5; }
-  /* manually marked */
-  .cal-day.marked-manual {
+  .cal-day.marked-auto.today .cal-day-inner::after { background: var(--accent-fg); opacity: 0.5; }
+  .cal-day.marked-manual .cal-day-inner {
     background: transparent;
     color: var(--ink);
     box-shadow: inset 0 0 0 1.5px var(--ink);
   }
-  .cal-day.marked-manual.today::after { background: var(--ink); }
+  .cal-day.marked-manual.today .cal-day-inner::after { background: var(--ink); }
 
   /* Calendar legend */
   .cal-legend {
     display: flex;
     gap: 16px;
-    padding: 14px 20px 16px;
+    padding: 16px 20px;
     align-items: center;
+    justify-content: center;
   }
   .cal-legend-item {
     display: flex;
@@ -777,10 +784,6 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18l6-6-6-6"/></svg>
       </button>
     </div>
-    <div class="cal-legend">
-      <div class="cal-legend-item"><div class="cal-legend-dot auto"></div>Session logged</div>
-      <div class="cal-legend-item"><div class="cal-legend-dot manual"></div>Manually marked</div>
-    </div>
     <div class="cal-dow-row">
       <div class="cal-dow">M</div>
       <div class="cal-dow">T</div>
@@ -791,6 +794,10 @@
       <div class="cal-dow">S</div>
     </div>
     <div class="cal-grid" id="cal-grid"></div>
+    <div class="cal-legend">
+      <div class="cal-legend-item"><div class="cal-legend-dot auto"></div>Session logged</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot manual"></div>Manually marked</div>
+    </div>
   </div>
 
   <!-- ── TAB BAR ── -->
@@ -1471,6 +1478,9 @@ function renderCalendar() {
   for (let i = 0; i < startOffset; i++) {
     const el = document.createElement('div');
     el.className = 'cal-day empty';
+    const inner = document.createElement('div');
+    inner.className = 'cal-day-inner';
+    el.appendChild(inner);
     grid.appendChild(el);
   }
 
@@ -1478,7 +1488,10 @@ function renderCalendar() {
     const ds = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const el = document.createElement('div');
     el.className = 'cal-day';
-    el.textContent = d;
+    const inner = document.createElement('div');
+    inner.className = 'cal-day-inner';
+    inner.textContent = d;
+    el.appendChild(inner);
 
     if (ds === todayStr) el.classList.add('today');
     const autoMarked = isSessionMarked(ds);
