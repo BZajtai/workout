@@ -45,16 +45,6 @@ A day is automatically marked on the calendar when a saved session meets either 
 
 Days that don't meet the threshold can be marked manually by tapping them. Tap again to unmark. Long-pressing a day that has a saved session opens a summary of what was logged.
 
-## Adding to iPhone home screen
-
-Open `gym-tracker.html` in Safari, tap the Share button, and select **Add to Home Screen**. The app will open full-screen without browser chrome, similar to a native app.
-
-## Data and privacy
-
-All workout data is stored in your browser's `localStorage` — it never leaves your device. The app has no backend, no accounts, and no network requests. Backing up via the Export button produces a local JSON file you can keep anywhere you like.
-
-The repository itself is public (required for GitHub Pages free tier), but it contains no personal data — only the app code and icons.
-
 ## Icon credits
 
 <a href="https://www.flaticon.com/free-icons/pec" title="pec icons">Pec icons created by Fahrul Oktaviana - Flaticon</a>
