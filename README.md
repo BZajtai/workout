@@ -67,3 +67,11 @@ Any exercise in the `Cardio` category automatically gets the timed input regardl
 <a href="https://www.flaticon.com/free-icons/elliptical" title="elliptical icons">Elliptical icons created by Flat Icons - Flaticon</a>
 
 <a href="https://www.flaticon.com/free-icons/workout" title="workout icons">Workout icons created by ultimatearm - Flaticon</a>
+
+<a href="https://www.flaticon.com/free-icons/swimming" title="swimming icons">Swimming icons created by Chattapat - Flaticon</a>
+
+<a href="https://www.flaticon.com/free-icons/pilates" title="pilates icons">Pilates icons created by Freepik - Flaticon</a>
+
+<a href="https://www.flaticon.com/free-icons/exercise" title="exercise icons">Exercise icons created by ultimatearm - Flaticon</a>
+
+<a href="https://www.flaticon.com/free-icons/pilates" title="pilates icons">Pilates icons created by photo3idea_studio - Flaticon</a>

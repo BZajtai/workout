@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="push-up.png">
 <title>Gym</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@300;400;500&display=swap');
@@ -528,6 +529,170 @@
 
   /* ── util ── */
   .divider { height: 1px; background: var(--border-lt); margin: 0 20px; }
+
+  /* ── Calendar ── */
+  .cal-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px 12px;
+  }
+  .cal-nav-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--ink);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .cal-nav-btn svg { width: 18px; height: 18px; }
+  .cal-month-label {
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .cal-grid {
+    margin: 0 20px;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+  .cal-dow {
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    letter-spacing: 0.06em;
+    padding-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .cal-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--ink-2);
+    cursor: pointer;
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: background 0.12s;
+  }
+  .cal-day.empty { cursor: default; }
+  .cal-day.today { color: var(--ink); font-weight: 500; }
+  .cal-day.today::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--ink-3);
+  }
+  /* auto-marked: saved session */
+  .cal-day.marked-auto {
+    background: var(--ink);
+    color: var(--accent-fg);
+  }
+  .cal-day.marked-auto.today::after { background: var(--accent-fg); opacity: 0.5; }
+  /* manually marked */
+  .cal-day.marked-manual {
+    background: transparent;
+    color: var(--ink);
+    box-shadow: inset 0 0 0 1.5px var(--ink);
+  }
+  .cal-day.marked-manual.today::after { background: var(--ink); }
+
+  /* Calendar legend */
+  .cal-legend {
+    display: flex;
+    gap: 16px;
+    padding: 14px 20px 0;
+    align-items: center;
+  }
+  .cal-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-2);
+    letter-spacing: 0.04em;
+  }
+  .cal-legend-dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .cal-legend-dot.auto { background: var(--ink); }
+  .cal-legend-dot.manual { background: transparent; box-shadow: inset 0 0 0 1.5px var(--ink); }
+
+  /* Session peek sheet */
+  #peek-sheet {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%) translateY(100%);
+    width: 100%;
+    max-width: 480px;
+    background: var(--surface);
+    border-radius: var(--radius) var(--radius) 0 0;
+    border-top: 1px solid var(--border);
+    padding: 20px 20px calc(20px + var(--safe-b));
+    z-index: 250;
+    transition: transform 0.25s ease;
+  }
+  #peek-sheet.open { transform: translateX(-50%) translateY(0); }
+  #peek-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,26,24,0.3);
+    z-index: 240;
+  }
+  #peek-overlay.open { display: block; }
+  .peek-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .peek-date {
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .peek-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--ink-3);
+    padding: 4px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .peek-close svg { width: 18px; height: 18px; }
+  .peek-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-top: 1px solid var(--border-lt);
+  }
+  .peek-row .ex-icon {
+    width: 28px; height: 28px;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .peek-ex-name { flex: 1; font-size: 13px; }
+  .peek-ex-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-2);
+  }
 </style>
 </head>
 <body>
@@ -585,17 +750,55 @@
     <div id="history-list"></div>
   </div>
 
+  <!-- ── CALENDAR SCREEN ── -->
+  <div id="screen-calendar" class="screen">
+    <div class="page-header">
+      <div class="page-title">Calendar</div>
+      <div class="page-sub" id="cal-streak-sub"></div>
+    </div>
+    <div class="cal-nav">
+      <button class="cal-nav-btn" id="cal-prev">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <div class="cal-month-label" id="cal-month-label"></div>
+      <button class="cal-nav-btn" id="cal-next">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
+    <div class="cal-legend">
+      <div class="cal-legend-item"><div class="cal-legend-dot auto"></div>Session logged</div>
+      <div class="cal-legend-item"><div class="cal-legend-dot manual"></div>Manually marked</div>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+  </div>
+
   <!-- ── TAB BAR ── -->
   <nav id="tabbar">
     <button class="tab active" data-tab="log">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12h8M12 8v8"/></svg>
       Log
     </button>
+    <button class="tab" data-tab="calendar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      Calendar
+    </button>
     <button class="tab" data-tab="history">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
       History
     </button>
   </nav>
+</div>
+
+<!-- ── SESSION PEEK SHEET ── -->
+<div id="peek-overlay"></div>
+<div id="peek-sheet">
+  <div class="peek-header">
+    <div class="peek-date" id="peek-date"></div>
+    <button class="peek-close" id="peek-close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div id="peek-body"></div>
 </div>
 
 <!-- ── MODALS ── -->
@@ -653,7 +856,7 @@
    icon: an emoji string OR a URL/path to an image
 ═══════════════════════════════════════════════ */
 const EXERCISES = [
-  // ── Chest ──
+   // ── Chest ──
   { id: "converging_bench_press", name: "Converging Bench Press", category: "Chest",     icon: "icons/chest-press.png" },
   { id: "pushups",                name: "Pushups",                category: "Chest",     icon: "icons/push-up.png",         type: "count" },
   // ── Back ──
@@ -665,7 +868,7 @@ const EXERCISES = [
   { id: "ohp",                    name: "Shoulder Press",         category: "Shoulders", icon: "icons/chest-press.png" },
   // ── Arms ──
   { id: "bicep_curl",             name: "Biceps Curl",            category: "Arms",      icon: "icons/biceps.png" },
-  { id: "tricep_curl",          name: "Tricep Curl",          category: "Arms",      icon: "icons/tricep.png" },
+  { id: "tricep_curl",            name: "Tricep Curl",            category: "Arms",      icon: "icons/tricep.png" },
   { id: "tricep_pulley",          name: "Tricep Pulley",          category: "Arms",      icon: "icons/triceps-pulley.png" },
   // ── Legs ──
   { id: "leg_press",              name: "Leg Press",              category: "Legs",      icon: "icons/leg-press-machine.png" },
@@ -679,6 +882,11 @@ const EXERCISES = [
   { id: "rowing",                 name: "Rowing",                 category: "Cardio",    icon: "icons/rowing.png" },
   { id: "elliptical",             name: "Elliptical",             category: "Cardio",    icon: "icons/elliptical.png" },
   { id: "treadmill",              name: "Treadmill",              category: "Cardio",    icon: "icons/treadmill.png" },
+  // ── Class ──
+  { id: "pilates",                name: "Pilates",                category: "Core",      icon: "icons/pilates.png", "type":"class" },
+  { id: "yoga",                   name: "Yoga",                   category: "Core",      icon: "icons/yoga.png", "type":"class" },
+  { id: "swim",                   name: "Swim",                   category: "Cardio",    icon: "icons/swimming.png" , "type":"class"},
+  { id: "ballefit",               name: "BalletFit",              category: "Cardio",    icon: "icons/workout.png", "type":"class" },
 ];
 /* ═══════════════════════════════════════════════ */
 
@@ -725,6 +933,7 @@ document.querySelectorAll('.tab').forEach(t => {
     t.classList.add('active');
     document.getElementById('screen-' + t.dataset.tab).classList.add('active');
     if (t.dataset.tab === 'history') renderHistory();
+    if (t.dataset.tab === 'calendar') renderCalendar();
   });
 });
 
@@ -806,8 +1015,10 @@ function renderExerciseCard(id, container) {
 
   const isTimed = ex.category === 'Cardio' || ex.type === 'timed';
   const isCount = ex.type === 'count';
+  const isClass = ex.type === 'class';
 
   function fmtVal(h) {
+    if (isClass) return h.done ? 'Done' : '—';
     if (isTimed) return h.duration || '—';
     if (isCount) {
       const parts = [];
@@ -824,10 +1035,10 @@ function renderExerciseCard(id, container) {
     return parts.length ? parts.join(' @ ') : '—';
   }
 
-  // For count/timed: entries stored as array; weighted: single object
+  // For count/timed/class: entries stored as array; weighted: single object
   function getEntries(h) {
-    if ((isTimed || isCount) && Array.isArray(h.entries)) return h.entries;
-    return [h]; // weighted or legacy
+    if ((isTimed || isCount || isClass) && Array.isArray(h.entries)) return h.entries;
+    return [h];
   }
 
   // Last session text
@@ -842,7 +1053,15 @@ function renderExerciseCard(id, container) {
       <span class="h-val">${getEntries(h).map(fmtVal).join(', ')}</span>
     </div>`).join('');
 
-  const inputsHtml = isTimed
+  const inputsHtml = isClass
+    ? `<div class="exercise-inputs" style="grid-template-columns:1fr">
+        <div class="input-cell">
+          <label>Logged</label>
+          <input type="hidden" data-field="done" value="1">
+          <span style="font-family:'DM Mono',monospace;font-size:13px;color:var(--ink-2);padding:8px 0;display:block">Tap save to record this session ✓</span>
+        </div>
+      </div>`
+    : isTimed
     ? `<div class="exercise-inputs" style="grid-template-columns:1fr">
         <div class="input-cell">
           <label>Duration</label>
@@ -898,6 +1117,12 @@ function renderExerciseCard(id, container) {
 
   // Inputs → save to current
   card.querySelectorAll('input').forEach(inp => {
+    // Pre-populate hidden fields immediately
+    if (inp.type === 'hidden') {
+      if (!current.exercises[id]) current.exercises[id] = {};
+      current.exercises[id][inp.dataset.field] = inp.value;
+      saveCurrent(current);
+    }
     inp.addEventListener('input', () => {
       if (!current.exercises[id]) current.exercises[id] = {};
       current.exercises[id][inp.dataset.field] = inp.value;
@@ -971,19 +1196,19 @@ document.getElementById('modal-finish-confirm').addEventListener('click', () => 
       const ex = exerciseMap[id];
       const isTimed = ex && (ex.category === 'Cardio' || ex.type === 'timed');
       const isCount = ex && ex.type === 'count';
+      const isClass = ex && ex.type === 'class';
       const incoming = current.exercises[id];
       if (!existing.exercises[id]) {
-        // New exercise — count/timed wrap in entries array, weighted as-is
-        existing.exercises[id] = (isTimed || isCount)
+        existing.exercises[id] = (isTimed || isCount || isClass)
           ? { entries: [{ ...incoming }] }
           : { ...incoming };
-      } else if (isTimed || isCount) {
-        // Count/timed: append as a separate entry
+      } else if (isTimed || isCount || isClass) {
+        // Separate entries
         const prev = existing.exercises[id];
         const prevEntries = Array.isArray(prev.entries) ? prev.entries : [{ ...prev }];
         existing.exercises[id] = { entries: [...prevEntries, { ...incoming }] };
       } else {
-        // Weighted: add numeric fields together
+        // Weighted: add together
         const prev = existing.exercises[id];
         const merged = { ...prev };
         ['sets', 'reps', 'weight'].forEach(field => {
@@ -996,13 +1221,13 @@ document.getElementById('modal-finish-confirm').addEventListener('click', () => 
     });
     sessions[idx] = existing;
   } else {
-    // New session — wrap count/timed in entries array
     const sessionExercises = {};
     Object.keys(current.exercises).forEach(id => {
       const ex = exerciseMap[id];
       const isTimed = ex && (ex.category === 'Cardio' || ex.type === 'timed');
       const isCount = ex && ex.type === 'count';
-      sessionExercises[id] = (isTimed || isCount)
+      const isClass = ex && ex.type === 'class';
+      sessionExercises[id] = (isTimed || isCount || isClass)
         ? { entries: [{ ...current.exercises[id] }] }
         : { ...current.exercises[id] };
     });
@@ -1048,7 +1273,9 @@ function renderHistory() {
         : ex.icon;
       const isCardio = ex.category === 'Cardio' || ex.type === 'timed';
       const isCount = ex.type === 'count';
+      const isClass = ex.type === 'class';
       function fmtEntry(e) {
+        if (isClass) return 'Done';
         if (isCardio) return e.duration || '—';
         const parts = [];
         if (e.sets && e.reps) parts.push(`${e.sets}×${e.reps}`);
@@ -1057,7 +1284,7 @@ function renderHistory() {
         if (!isCount && e.weight) parts.push(`${e.weight}kg`);
         return parts.length ? parts.join(' @ ') : '—';
       }
-      const entries = (isCardio || isCount) && Array.isArray(d.entries) ? d.entries : [d];
+      const entries = (isCardio || isCount || isClass) && Array.isArray(d.entries) ? d.entries : [d];
       const val = entries.map(fmtEntry).join(', ');
       return `
         <div class="hs-exercise-row">
@@ -1151,9 +1378,189 @@ document.getElementById('modal-import-confirm').addEventListener('click', () => 
   }
 });
 
+/* ═══════════════════════════════════════
+   CALENDAR
+═══════════════════════════════════════ */
+const SK_MANUAL = 'gym_manual_marks';
+
+function getManualMarks() {
+  try { return JSON.parse(localStorage.getItem(SK_MANUAL)) || {}; } catch { return {}; }
+}
+function saveManualMarks(m) { localStorage.setItem(SK_MANUAL, JSON.stringify(m)); }
+
+function isSessionMarked(dateStr) {
+  const sessions = getSessions();
+  const session = sessions.find(s => s.date === dateStr);
+  if (!session) return false;
+  const exs = session.exercises || {};
+  const ids = Object.keys(exs);
+  // Auto-mark if any class exercise present
+  const hasClass = ids.some(id => {
+    const ex = exerciseMap[id];
+    return ex && ex.type === 'class';
+  });
+  if (hasClass) return true;
+  // Auto-mark if 3+ non-class exercises
+  const nonClass = ids.filter(id => {
+    const ex = exerciseMap[id];
+    return ex && ex.type !== 'class';
+  });
+  return nonClass.length >= 3;
+}
+
+let calYear, calMonth;
+
+function initCalendar() {
+  const now = new Date();
+  calYear = now.getFullYear();
+  calMonth = now.getMonth();
+}
+
+function renderCalendar() {
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  const manualMarks = getManualMarks();
+  const label = new Date(calYear, calMonth, 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+  document.getElementById('cal-month-label').textContent = label;
+
+  // Streak calculation
+  let streak = 0;
+  let check = new Date(now);
+  check.setHours(0,0,0,0);
+  while (true) {
+    const ds = `${check.getFullYear()}-${String(check.getMonth()+1).padStart(2,'0')}-${String(check.getDate()).padStart(2,'0')}`;
+    if (isSessionMarked(ds) || manualMarks[ds]) {
+      streak++;
+      check.setDate(check.getDate() - 1);
+    } else { break; }
+  }
+  document.getElementById('cal-streak-sub').textContent = streak > 0 ? `${streak} day streak 🔥` : '';
+
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = '';
+
+  // Day of week headers (Mon first)
+  ['M','T','W','T','F','S','S'].forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'cal-dow';
+    el.textContent = d;
+    grid.appendChild(el);
+  });
+
+  const firstDay = new Date(calYear, calMonth, 1);
+  // Monday-first offset (0=Mon … 6=Sun)
+  let startOffset = firstDay.getDay() - 1;
+  if (startOffset < 0) startOffset = 6;
+
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+
+  // Empty cells
+  for (let i = 0; i < startOffset; i++) {
+    const el = document.createElement('div');
+    el.className = 'cal-day empty';
+    grid.appendChild(el);
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const el = document.createElement('div');
+    el.className = 'cal-day';
+    el.textContent = d;
+
+    if (ds === todayStr) el.classList.add('today');
+    const autoMarked = isSessionMarked(ds);
+    const manualMarked = !!manualMarks[ds];
+
+    if (autoMarked) el.classList.add('marked-auto');
+    else if (manualMarked) el.classList.add('marked-manual');
+
+    // Tap: toggle manual mark (only if no session)
+    el.addEventListener('click', () => {
+      if (autoMarked) return; // session days not manually toggleable
+      const marks = getManualMarks();
+      if (marks[ds]) { delete marks[ds]; } else { marks[ds] = true; }
+      saveManualMarks(marks);
+      renderCalendar();
+    });
+
+    // Long-press: show session peek if session exists
+    let pressTimer = null;
+    el.addEventListener('pointerdown', () => {
+      pressTimer = setTimeout(() => {
+        const session = getSessions().find(s => s.date === ds);
+        if (session) showPeek(session);
+        pressTimer = null;
+      }, 500);
+    });
+    el.addEventListener('pointerup', () => { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } });
+    el.addEventListener('pointerleave', () => { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } });
+
+    grid.appendChild(el);
+  }
+}
+
+function showPeek(session) {
+  document.getElementById('peek-date').textContent = fmtDate(session.date);
+  const body = document.getElementById('peek-body');
+  const ids = Object.keys(session.exercises || {});
+  if (ids.length === 0) {
+    body.innerHTML = '<div style="color:var(--ink-3);font-size:13px;padding:12px 0">No exercises recorded.</div>';
+  } else {
+    body.innerHTML = ids.map(id => {
+      const ex = exerciseMap[id];
+      const d = session.exercises[id] || {};
+      if (!ex) return '';
+      const iconHtml = ex.icon.startsWith('http') || ex.icon.startsWith('/') || ex.icon.startsWith('data:') || ex.icon.startsWith('icons/')
+        ? `<img src="${ex.icon}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:6px">`
+        : ex.icon;
+      const isCardio = ex.category === 'Cardio' || ex.type === 'timed';
+      const isCount = ex.type === 'count';
+      const isClass = ex.type === 'class';
+      function fmtE(e) {
+        if (isClass) return 'Done';
+        if (isCardio) return e.duration || '—';
+        const parts = [];
+        if (e.sets && e.reps) parts.push(`${e.sets}×${e.reps}`);
+        else if (e.sets) parts.push(`${e.sets} sets`);
+        else if (e.reps) parts.push(`${e.reps} reps`);
+        if (!isCount && e.weight) parts.push(`${e.weight}kg`);
+        return parts.length ? parts.join(' @ ') : '—';
+      }
+      const entries = (isCardio || isCount || isClass) && Array.isArray(d.entries) ? d.entries : [d];
+      const val = entries.map(fmtE).join(', ');
+      return `<div class="peek-row">
+        <div class="ex-icon">${iconHtml}</div>
+        <div class="peek-ex-name">${ex.name}</div>
+        <div class="peek-ex-val">${val}</div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('peek-overlay').classList.add('open');
+  document.getElementById('peek-sheet').classList.add('open');
+}
+
+function closePeek() {
+  document.getElementById('peek-overlay').classList.remove('open');
+  document.getElementById('peek-sheet').classList.remove('open');
+}
+
+document.getElementById('peek-close').addEventListener('click', closePeek);
+document.getElementById('peek-overlay').addEventListener('click', closePeek);
+document.getElementById('cal-prev').addEventListener('click', () => {
+  calMonth--;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderCalendar();
+});
+document.getElementById('cal-next').addEventListener('click', () => {
+  calMonth++;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCalendar();
+});
+
 /* ── Init ── */
 buildExerciseSelect();
 renderLogScreen();
+initCalendar();
 </script>
 </body>
 </html>
