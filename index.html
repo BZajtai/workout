@@ -188,6 +188,9 @@
     align-items: center;
     justify-content: space-between;
   }
+  #session-banner .session-info {
+    position: relative;
+  }
   #session-banner .session-info .label {
     font-family: 'DM Mono', monospace;
     font-size: 10px;
@@ -202,7 +205,6 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    cursor: pointer;
   }
   #session-banner .session-info .date svg {
     width: 13px; height: 13px;
@@ -211,9 +213,12 @@
   }
   #date-input-hidden {
     position: absolute;
+    inset: 0;
     opacity: 0;
-    pointer-events: none;
-    width: 0; height: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    -webkit-appearance: none;
   }
   #session-banner .banner-actions { display: flex; gap: 8px; }
 
@@ -998,13 +1003,8 @@ function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
 /* ── Session date picker ── */
-const bannerDate = document.getElementById('banner-date');
-const dateInput  = document.getElementById('date-input-hidden');
-
-bannerDate.addEventListener('click', () => {
-  dateInput.max = todayStr();
-  dateInput.showPicker ? dateInput.showPicker() : dateInput.click();
-});
+const dateInput = document.getElementById('date-input-hidden');
+dateInput.max = todayStr();
 
 dateInput.addEventListener('change', () => {
   if (!dateInput.value) return;
