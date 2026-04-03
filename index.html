@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Workout">
+<meta name="apple-mobile-web-app-title" content="Gym">
 <link rel="apple-touch-icon" href="icons/push-up.png">
-<title>Workout</title>
+<title>Gym</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@300;400;500&display=swap');
 
@@ -270,15 +270,15 @@
     border-bottom: 1px solid var(--border-lt);
   }
   .ex-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
+    width: 50px;
+    height: 50px;
+    border-radius: 9px;
     background: var(--bg);
     border: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: 24px;
     flex-shrink: 0;
     overflow: hidden;
   }
@@ -442,7 +442,7 @@
     padding: 10px 16px;
     border-top: 1px solid var(--border-lt);
   }
-  .hs-exercise-row .ex-icon { width: 30px; height: 30px; font-size: 15px; }
+  .hs-exercise-row .ex-icon { width: 50px; height: 50px; font-size: 20px; }
   .hs-ex-name { flex: 1; font-size: 13px; }
   .hs-ex-val {
     font-family: 'DM Mono', monospace;
@@ -547,6 +547,122 @@
     letter-spacing: 0.02em;
   }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── Exercise sheet (grouped) ── */
+  #exercise-sheet {
+    margin-top: 12px;
+  }
+  .cat-group {
+    margin-bottom: 4px;
+  }
+  .cat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px 8px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  .cat-header-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .cat-header-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .cat-logged-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-2);
+    background: var(--border-lt);
+    border-radius: 20px;
+    padding: 1px 7px;
+    display: none;
+  }
+  .cat-logged-count.visible { display: inline; }
+  .cat-chevron {
+    color: var(--ink-3);
+    transition: transform 0.2s;
+  }
+  .cat-chevron svg { width: 14px; height: 14px; display: block; }
+  .cat-header.collapsed .cat-chevron { transform: rotate(-90deg); }
+  .cat-body {
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding-bottom: 8px;
+  }
+  .cat-body.collapsed { display: none; }
+
+  /* Sheet exercise card — 2-column compact */
+  .sheet-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+  .sheet-card.has-data { border-color: var(--ink); }
+  .sheet-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border-lt);
+  }
+  .sheet-card.has-data .sheet-card-header { border-bottom-color: var(--border); }
+  .sheet-card .ex-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 7px;
+    font-size: 17px;
+    flex-shrink: 0;
+  }
+  .sheet-card .ex-name {
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.3;
+  }
+  .sheet-card .exercise-inputs {
+    border-bottom: none;
+  }
+  .sheet-card .input-cell {
+    padding: 6px 4px;
+  }
+  .sheet-card .input-cell label {
+    font-size: 8px;
+  }
+  .sheet-card .input-cell input {
+    font-size: 16px;
+  }
+  .sheet-card .ex-history-toggle {
+    padding: 5px 10px;
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+  .sheet-card .last-session {
+    font-size: 9px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  .sheet-card .toggle-btn {
+    font-size: 9px;
+  }
+  .sheet-card .ex-history-expanded {
+    padding: 0 10px 8px;
+  }
+  .sheet-card .history-row .h-date { font-size: 9px; }
+  .sheet-card .history-row .h-val  { font-size: 9px; }
 
   /* ── util ── */
   .divider { height: 1px; background: var(--border-lt); margin: 0 20px; }
@@ -722,8 +838,8 @@
     border-top: 1px solid var(--border-lt);
   }
   .peek-row .ex-icon {
-    width: 28px; height: 28px;
-    font-size: 14px;
+    width: 50px; height: 50px;
+    font-size: 17px;
     flex-shrink: 0;
   }
   .peek-ex-name { flex: 1; font-size: 13px; }
@@ -758,16 +874,7 @@
       </div>
     </div>
 
-    <div id="exercise-picker-wrap">
-      <div class="picker-row">
-        <select id="exercise-select">
-          <option value="">Add an exercise…</option>
-        </select>
-        <button class="btn" id="btn-add-exercise">Add</button>
-      </div>
-    </div>
-
-    <div class="exercise-log-list" id="exercise-log-list"></div>
+    <div id="exercise-sheet"></div>
 
     <div id="finish-wrap">
       <button class="btn" id="btn-finish-session">Save Session</button>
@@ -976,7 +1083,21 @@ if (current.date !== todayStr() && Object.keys(current.exercises).length > 0 && 
   saveCurrent(current);
 }
 
+// Scrub any class exercises that were auto-logged by the old hidden-input bug
 const exerciseMap = Object.fromEntries(EXERCISES.map(e => [e.id, e]));
+let scrubbed = false;
+Object.keys(current.exercises).forEach(id => {
+  const ex = exerciseMap[id];
+  if (ex && ex.type === 'class') {
+    const d = current.exercises[id];
+    // Only auto-logged entries have done='1' and nothing else
+    if (d && d.done && Object.keys(d).length === 1) {
+      delete current.exercises[id];
+      scrubbed = true;
+    }
+  }
+});
+if (scrubbed) saveCurrent(current);
 
 /* ── Tab navigation ── */
 document.querySelectorAll('.tab').forEach(t => {
@@ -1020,68 +1141,98 @@ dateInput.addEventListener('change', () => {
 function renderLogScreen() {
   document.getElementById('banner-date').childNodes[0].textContent = fmtDate(current.date) + ' ';
   document.getElementById('date-input-hidden').value = current.date;
-  renderExerciseList();
+  renderExerciseSheet();
 }
 
-function buildExerciseSelect() {
-  const sel = document.getElementById('exercise-select');
-  // Group by category
-  const categories = {};
-  EXERCISES.forEach(e => {
-    if (!categories[e.category]) categories[e.category] = [];
-    categories[e.category].push(e);
+// Track which categories are collapsed (persisted in memory only)
+const collapsedCats = new Set();
+
+function renderExerciseSheet() {
+  const sheet = document.getElementById('exercise-sheet');
+  sheet.innerHTML = '';
+
+  // Group exercises by category preserving EXERCISES order
+  const catOrder = [];
+  const catMap = {};
+  EXERCISES.forEach(ex => {
+    if (!catMap[ex.category]) {
+      catMap[ex.category] = [];
+      catOrder.push(ex.category);
+    }
+    catMap[ex.category].push(ex);
   });
-  sel.innerHTML = '<option value="">Add an exercise…</option>';
-  Object.entries(categories).forEach(([cat, exs]) => {
-    const og = document.createElement('optgroup');
-    og.label = cat;
-    exs.forEach(e => {
-      const o = document.createElement('option');
-      o.value = e.id;
-      o.textContent = e.name;
-      og.appendChild(o);
+
+  catOrder.forEach(cat => {
+    const exs = catMap[cat];
+    const group = document.createElement('div');
+    group.className = 'cat-group';
+
+    // Count how many exercises in this cat have data
+    const loggedCount = exs.filter(ex => hasData(ex.id)).length;
+    const isCollapsed = collapsedCats.has(cat);
+
+    group.innerHTML = `
+      <div class="cat-header${isCollapsed ? ' collapsed' : ''}" data-cat="${cat}">
+        <span class="cat-header-label">${cat}</span>
+        <span class="cat-header-meta">
+          <span class="cat-logged-count${loggedCount > 0 ? ' visible' : ''}" id="cat-count-${cat}">${loggedCount}</span>
+          <span class="cat-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span>
+        </span>
+      </div>
+      <div class="cat-body${isCollapsed ? ' collapsed' : ''}" id="cat-body-${cat}"></div>
+    `;
+
+    const header = group.querySelector('.cat-header');
+    header.addEventListener('click', () => {
+      const body = group.querySelector('.cat-body');
+      if (collapsedCats.has(cat)) {
+        collapsedCats.delete(cat);
+        header.classList.remove('collapsed');
+        body.classList.remove('collapsed');
+      } else {
+        collapsedCats.add(cat);
+        header.classList.add('collapsed');
+        body.classList.add('collapsed');
+      }
     });
-    sel.appendChild(og);
+
+    sheet.appendChild(group);
+
+    const body = group.querySelector('.cat-body');
+    exs.forEach(ex => renderSheetCard(ex, body));
   });
 }
 
-function renderExerciseList() {
-  const list = document.getElementById('exercise-log-list');
-  const ids = Object.keys(current.exercises);
-  if (ids.length === 0) {
-    list.innerHTML = '<div class="empty">No exercises yet — add one above.</div>';
-    return;
-  }
-  list.innerHTML = '';
-  ids.forEach(id => renderExerciseCard(id, list));
-}
-
-function getExHistory(exerciseId) {
-  // Returns array of {date, ...data} newest first, preserving entries array for count/timed
-  return getSessions()
-    .filter(s => s.exercises && s.exercises[exerciseId])
-    .map(s => ({ date: s.date, ...s.exercises[exerciseId] }))
-    .slice(0, 6);
-}
-
-function renderExerciseCard(id, container) {
+function hasData(id) {
+  const d = current.exercises[id];
+  if (!d) return false;
   const ex = exerciseMap[id];
-  if (!ex) return;
+  if (ex && ex.type === 'class') return !!d.done;
+  return !!(d.sets || d.reps || d.weight || d.duration);
+}
+
+function updateCatCount(cat) {
+  const exs = EXERCISES.filter(e => e.category === cat);
+  const count = exs.filter(e => hasData(e.id)).length;
+  const el = document.getElementById('cat-count-' + cat);
+  if (el) {
+    el.textContent = count;
+    el.classList.toggle('visible', count > 0);
+  }
+}
+
+function renderSheetCard(ex, container) {
+  const id = ex.id;
   const data = current.exercises[id] || {};
   const history = getExHistory(id);
-
-  const card = document.createElement('div');
-  card.className = 'exercise-card';
-  card.dataset.id = id;
-
-  // Icon
-  const iconHtml = ex.icon.startsWith('http') || ex.icon.startsWith('/') || ex.icon.startsWith('data:') || ex.icon.startsWith('icons/')
-    ? `<img src="${ex.icon}" alt="">`
-    : ex.icon;
 
   const isTimed = ex.category === 'Cardio' || ex.type === 'timed';
   const isCount = ex.type === 'count';
   const isClass = ex.type === 'class';
+
+  const iconHtml = ex.icon.startsWith('http') || ex.icon.startsWith('/') || ex.icon.startsWith('data:') || ex.icon.startsWith('icons/')
+    ? `<img src="${ex.icon}" alt="">`
+    : ex.icon;
 
   function fmtVal(h) {
     if (isClass) return h.done ? 'Done' : '—';
@@ -1101,30 +1252,32 @@ function renderExerciseCard(id, container) {
     return parts.length ? parts.join(' @ ') : '—';
   }
 
-  // For count/timed/class: entries stored as array; weighted: single object
   function getEntries(h) {
     if ((isTimed || isCount || isClass) && Array.isArray(h.entries)) return h.entries;
     return [h];
   }
 
-  // Last session text
   const lastStr = history.length > 0
-    ? getEntries(history[0]).map(fmtVal).join(', ')
+    ? isClass
+      ? fmtDate(history[0].date)
+      : getEntries(history[0]).map(fmtVal).join(', ')
     : 'No history';
 
-  // Older history rows
   const historyRows = history.map((h, i) => `
     <div class="history-row" ${i === 0 ? 'style="display:none"' : ''}>
       <span class="h-date">${fmtDate(h.date)}</span>
-      <span class="h-val">${getEntries(h).map(fmtVal).join(', ')}</span>
+      <span class="h-val">${isClass ? '' : getEntries(h).map(fmtVal).join(', ')}</span>
     </div>`).join('');
+
+  const isLogged = !!(current.exercises[id] && current.exercises[id].done);
 
   const inputsHtml = isClass
     ? `<div class="exercise-inputs" style="grid-template-columns:1fr">
         <div class="input-cell">
-          <label>Logged</label>
-          <input type="hidden" data-field="done" value="1">
-          <span style="font-family:'DM Mono',monospace;font-size:13px;color:var(--ink-2);padding:8px 0;display:block">Tap save to record this session ✓</span>
+          <button class="btn-class-toggle ${isLogged ? 'logged' : ''}" data-id="${id}"
+            style="width:100%;padding:10px 8px;border:none;background:transparent;cursor:pointer;font-family:'DM Mono',monospace;font-size:12px;color:${isLogged ? 'var(--ink)' : 'var(--ink-3)'};letter-spacing:0.04em;-webkit-tap-highlight-color:transparent;">
+            ${isLogged ? '✓ Logged' : 'Tap to log'}
+          </button>
         </div>
       </div>`
     : isTimed
@@ -1155,21 +1308,20 @@ function renderExerciseCard(id, container) {
           <input type="number" inputmode="numeric" min="1" placeholder="—" data-field="reps" value="${data.reps || ''}">
         </div>
         <div class="input-cell">
-          <label>Weight kg</label>
+          <label>Weight</label>
           <input type="number" inputmode="decimal" min="0" step="0.5" placeholder="—" data-field="weight" value="${data.weight || ''}">
         </div>
       </div>`;
 
+  const card = document.createElement('div');
+  card.className = `sheet-card${hasData(id) ? ' has-data' : ''}`;
+  card.dataset.id = id;
   card.innerHTML = `
-    <div class="exercise-card-header">
+    <div class="sheet-card-header">
       <div class="ex-icon">${iconHtml}</div>
       <div style="flex:1">
         <div class="ex-name">${ex.name}</div>
-        <div class="ex-category">${ex.category}</div>
       </div>
-      <button class="ex-remove" data-remove="${id}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
-      </button>
     </div>
     ${inputsHtml}
     <div class="ex-history-toggle">
@@ -1181,27 +1333,34 @@ function renderExerciseCard(id, container) {
     ${history.length > 1 ? `<div class="ex-history-expanded" id="hist-${id}">${historyRows}</div>` : ''}
   `;
 
-  // Inputs → save to current
-  card.querySelectorAll('input').forEach(inp => {
-    // Pre-populate hidden fields immediately
-    if (inp.type === 'hidden') {
-      if (!current.exercises[id]) current.exercises[id] = {};
-      current.exercises[id][inp.dataset.field] = inp.value;
-      saveCurrent(current);
+  // Inputs → save to current, update card border and cat count
+  if (isClass) {
+    const toggleBtn = card.querySelector('.btn-class-toggle');
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', () => {
+        const alreadyLogged = !!(current.exercises[id] && current.exercises[id].done);
+        if (alreadyLogged) {
+          delete current.exercises[id];
+        } else {
+          if (!current.exercises[id]) current.exercises[id] = {};
+          current.exercises[id].done = '1';
+        }
+        saveCurrent(current);
+        // Re-render just this card by re-rendering the whole sheet
+        renderExerciseSheet();
+      });
     }
-    inp.addEventListener('input', () => {
-      if (!current.exercises[id]) current.exercises[id] = {};
-      current.exercises[id][inp.dataset.field] = inp.value;
-      saveCurrent(current);
+  } else {
+    card.querySelectorAll('input').forEach(inp => {
+      inp.addEventListener('input', () => {
+        if (!current.exercises[id]) current.exercises[id] = {};
+        current.exercises[id][inp.dataset.field] = inp.value;
+        saveCurrent(current);
+        card.classList.toggle('has-data', hasData(id));
+        updateCatCount(ex.category);
+      });
     });
-  });
-
-  // Remove button
-  card.querySelector('[data-remove]').addEventListener('click', () => {
-    delete current.exercises[id];
-    saveCurrent(current);
-    renderExerciseList();
-  });
+  }
 
   // History toggle
   const togBtn = card.querySelector('[data-hist]');
@@ -1210,7 +1369,6 @@ function renderExerciseCard(id, container) {
       const expanded = document.getElementById('hist-' + id);
       const isOpen = expanded.classList.toggle('open');
       togBtn.classList.toggle('open', isOpen);
-      // Show/hide all rows (skip index 0 — already shown as "Last session")
       expanded.querySelectorAll('.history-row').forEach((r, i) => {
         r.style.display = isOpen ? '' : (i === 0 ? 'none' : '');
       });
@@ -1220,17 +1378,13 @@ function renderExerciseCard(id, container) {
   container.appendChild(card);
 }
 
-/* Add exercise */
-document.getElementById('btn-add-exercise').addEventListener('click', () => {
-  const sel = document.getElementById('exercise-select');
-  const id = sel.value;
-  if (!id) return;
-  if (current.exercises[id]) { toast('Already added'); return; }
-  current.exercises[id] = {};
-  saveCurrent(current);
-  sel.value = '';
-  renderExerciseList();
-});
+function getExHistory(exerciseId) {
+  // Returns array of {date, ...data} newest first, preserving entries array for count/timed
+  return getSessions()
+    .filter(s => s.exercises && s.exercises[exerciseId])
+    .map(s => ({ date: s.date, ...s.exercises[exerciseId] }))
+    .slice(0, 6);
+}
 
 /* Clear session */
 document.getElementById('btn-clear-session').addEventListener('click', () => openModal('modal-clear'));
@@ -1245,7 +1399,7 @@ document.getElementById('modal-clear-confirm').addEventListener('click', () => {
 
 /* Finish / save session */
 document.getElementById('btn-finish-session').addEventListener('click', () => {
-  const ids = Object.keys(current.exercises);
+  const ids = Object.keys(current.exercises).filter(id => hasData(id));
   if (ids.length === 0) { toast('Nothing to save'); return; }
   const count = ids.length;
   document.getElementById('modal-finish-body').textContent =
@@ -1256,14 +1410,18 @@ document.getElementById('modal-finish-cancel').addEventListener('click', () => c
 document.getElementById('modal-finish-confirm').addEventListener('click', () => {
   const sessions = getSessions();
   const idx = sessions.findIndex(s => s.date === current.date);
+  // Only save exercises that actually have data entered
+  const exercisesToSave = Object.fromEntries(
+    Object.entries(current.exercises).filter(([id]) => hasData(id))
+  );
   if (idx > -1) {
     const existing = sessions[idx];
-    Object.keys(current.exercises).forEach(id => {
+    Object.keys(exercisesToSave).forEach(id => {
       const ex = exerciseMap[id];
       const isTimed = ex && (ex.category === 'Cardio' || ex.type === 'timed');
       const isCount = ex && ex.type === 'count';
       const isClass = ex && ex.type === 'class';
-      const incoming = current.exercises[id];
+      const incoming = exercisesToSave[id];
       if (!existing.exercises[id]) {
         existing.exercises[id] = (isTimed || isCount || isClass)
           ? { entries: [{ ...incoming }] }
@@ -1288,14 +1446,14 @@ document.getElementById('modal-finish-confirm').addEventListener('click', () => 
     sessions[idx] = existing;
   } else {
     const sessionExercises = {};
-    Object.keys(current.exercises).forEach(id => {
+    Object.keys(exercisesToSave).forEach(id => {
       const ex = exerciseMap[id];
       const isTimed = ex && (ex.category === 'Cardio' || ex.type === 'timed');
       const isCount = ex && ex.type === 'count';
       const isClass = ex && ex.type === 'class';
       sessionExercises[id] = (isTimed || isCount || isClass)
-        ? { entries: [{ ...current.exercises[id] }] }
-        : { ...current.exercises[id] };
+        ? { entries: [{ ...exercisesToSave[id] }] }
+        : { ...exercisesToSave[id] };
     });
     sessions.unshift({ date: current.date, exercises: sessionExercises });
   }
@@ -1622,7 +1780,6 @@ document.getElementById('cal-next').addEventListener('click', () => {
 });
 
 /* ── Init ── */
-buildExerciseSelect();
 renderLogScreen();
 initCalendar();
 </script>
