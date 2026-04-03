@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Gym">
+<meta name="apple-mobile-web-app-title" content="Workout">
 <link rel="apple-touch-icon" href="icons/push-up.png">
-<title>Gym</title>
+<title>Workout</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@300;400;500&display=swap');
 
@@ -1017,35 +1017,35 @@
 const EXERCISES = [
    // ── Chest ──
   { id: "converging_bench_press", name: "Converging Bench Press", category: "Chest",     icon: "icons/chest-press.png" },
+  { id: "rear_delt",              name: "Rear Delt/Pec Fly",      category: "Chest",      icon: "icons/pec-deck.png" },
   { id: "pushups",                name: "Pushups",                category: "Chest",     icon: "icons/push-up.png",         type: "count" },
   // ── Back ──
   { id: "diverging_lat_pulldown", name: "Diverging Lat Pulldown", category: "Back",      icon: "icons/lat-pulldown.png" },
   { id: "lat_pulldown",           name: "Lat Pulldown",           category: "Back",      icon: "icons/lat-pulldown.png" },
-  { id: "rear_delt",              name: "Rear Delt/Pec Fly",      category: "Back",      icon: "icons/pec-deck.png" },
-  { id: "seated_row",             name: "Seated Row",             category: "Back",      icon: "icons/rowing.png" },
+  { id: "seated_row",             name: "Seated Row",             category: "Back",      icon: "icons/seated-row.png" },
   // ── Shoulders ──
-  { id: "ohp",                    name: "Shoulder Press",         category: "Shoulders", icon: "icons/chest-press.png" },
+  { id: "ohp",                    name: "Shoulder Press",         category: "Shoulders", icon: "icons/shoulder-press.png" },
   // ── Arms ──
   { id: "bicep_curl",             name: "Biceps Curl",            category: "Arms",      icon: "icons/biceps.png" },
   { id: "tricep_curl",            name: "Tricep Curl",            category: "Arms",      icon: "icons/tricep.png" },
   { id: "tricep_pulley",          name: "Tricep Pulley",          category: "Arms",      icon: "icons/triceps-pulley.png" },
   // ── Legs ──
   { id: "leg_press",              name: "Leg Press",              category: "Legs",      icon: "icons/leg-press-machine.png" },
-  { id: "abductor_press",         name: "Abductor Press",         category: "Legs",      icon: "icons/abductor.png" },
-  { id: "adductor_press",         name: "Adductor Press",         category: "Legs",      icon: "icons/adductor.png" },
+  { id: "outer_thigh",         name: "Outer Thigh",         category: "Legs",      icon: "icons/abductor.png" },
+  { id: "inner_thigh",         name: "Inner Thigh",         category: "Legs",      icon: "icons/adductor.png" },
   { id: "squats",                 name: "Squats",                 category: "Legs",      icon: "icons/squats.png",          type: "count" },
   { id: "lunges",                 name: "Lunges",                 category: "Legs",      icon: "icons/lunges.png",          type: "count" },
   // ── Core ──
   { id: "plank",                  name: "Plank",                  category: "Core",      icon: "icons/plank.png",           type: "timed" },
   // ── Cardio ──
-  { id: "rowing",                 name: "Rowing",                 category: "Cardio",    icon: "icons/rowing.png" },
-  { id: "elliptical",             name: "Elliptical",             category: "Cardio",    icon: "icons/elliptical.png" },
-  { id: "treadmill",              name: "Treadmill",              category: "Cardio",    icon: "icons/treadmill.png" },
+  { id: "rowing",                 name: "Rowing",                 category: "Cardio",    icon: "icons/rowing.png",    fields: ["duration", "distance"] },
+  { id: "elliptical",             name: "Elliptical",             category: "Cardio",    icon: "icons/elliptical.png", fields: ["duration", "distance"] },
+  { id: "treadmill",              name: "Treadmill",              category: "Cardio",    icon: "icons/treadmill.png", fields: ["duration", "distance"] },
   // ── Class ──
   { id: "pilates",                name: "Pilates",                category: "Core",      icon: "icons/pilates.png", "type":"class" },
   { id: "yoga",                   name: "Yoga",                   category: "Core",      icon: "icons/yoga.png", "type":"class" },
   { id: "swim",                   name: "Swim",                   category: "Cardio",    icon: "icons/swimming.png" , "type":"class"},
-  { id: "ballefit",               name: "BalletFit",              category: "Cardio",    icon: "icons/workout.png", "type":"class" },
+  { id: "ballefit",               name: "BalletFit",              category: "Workout",    icon: "icons/workout.png", "type":"class" },
 ];
 /* ═══════════════════════════════════════════════ */
 
@@ -1208,7 +1208,7 @@ function hasData(id) {
   if (!d) return false;
   const ex = exerciseMap[id];
   if (ex && ex.type === 'class') return !!d.done;
-  return !!(d.sets || d.reps || d.weight || d.duration);
+  return !!(d.sets || d.reps || d.weight || d.duration || d.distance);
 }
 
 function updateCatCount(cat) {
@@ -1229,6 +1229,7 @@ function renderSheetCard(ex, container) {
   const isTimed = ex.category === 'Cardio' || ex.type === 'timed';
   const isCount = ex.type === 'count';
   const isClass = ex.type === 'class';
+  const hasDistance = Array.isArray(ex.fields) && ex.fields.includes('distance');
 
   const iconHtml = ex.icon.startsWith('http') || ex.icon.startsWith('/') || ex.icon.startsWith('data:') || ex.icon.startsWith('icons/')
     ? `<img src="${ex.icon}" alt="">`
@@ -1236,7 +1237,12 @@ function renderSheetCard(ex, container) {
 
   function fmtVal(h) {
     if (isClass) return h.done ? 'Done' : '—';
-    if (isTimed) return h.duration || '—';
+    if (isTimed) {
+      const parts = [];
+      if (h.duration) parts.push(h.duration);
+      if (h.distance) parts.push(`${h.distance}km`);
+      return parts.length ? parts.join(' · ') : '—';
+    }
     if (isCount) {
       const parts = [];
       if (h.sets && h.reps) parts.push(`${h.sets}×${h.reps}`);
@@ -1281,11 +1287,15 @@ function renderSheetCard(ex, container) {
         </div>
       </div>`
     : isTimed
-    ? `<div class="exercise-inputs" style="grid-template-columns:1fr">
+    ? `<div class="exercise-inputs" style="grid-template-columns:${hasDistance ? '1fr 1fr' : '1fr'}">
         <div class="input-cell">
           <label>Duration</label>
           <input type="text" inputmode="numeric" placeholder="—" data-field="duration" value="${data.duration || ''}" style="font-size:20px">
         </div>
+        ${hasDistance ? `<div class="input-cell">
+          <label>Dist. km</label>
+          <input type="number" inputmode="decimal" min="0" step="0.1" placeholder="—" data-field="distance" value="${data.distance || ''}" style="font-size:20px">
+        </div>` : ''}
       </div>`
     : isCount
     ? `<div class="exercise-inputs" style="grid-template-columns:1fr 1fr">
@@ -1500,7 +1510,12 @@ function renderHistory() {
       const isClass = ex.type === 'class';
       function fmtEntry(e) {
         if (isClass) return 'Done';
-        if (isCardio) return e.duration || '—';
+        if (isCardio) {
+          const parts = [];
+          if (e.duration) parts.push(e.duration);
+          if (e.distance) parts.push(`${e.distance}km`);
+          return parts.length ? parts.join(' · ') : '—';
+        }
         const parts = [];
         if (e.sets && e.reps) parts.push(`${e.sets}×${e.reps}`);
         else if (e.sets) parts.push(`${e.sets} sets`);
@@ -1740,7 +1755,12 @@ function showPeek(session) {
       const isClass = ex.type === 'class';
       function fmtE(e) {
         if (isClass) return 'Done';
-        if (isCardio) return e.duration || '—';
+        if (isCardio) {
+          const parts = [];
+          if (e.duration) parts.push(e.duration);
+          if (e.distance) parts.push(`${e.distance}km`);
+          return parts.length ? parts.join(' · ') : '—';
+        }
         const parts = [];
         if (e.sets && e.reps) parts.push(`${e.sets}×${e.reps}`);
         else if (e.sets) parts.push(`${e.sets} sets`);
