@@ -511,22 +511,6 @@
   .modal-body { color: var(--ink-2); font-size: 14px; line-height: 1.6; margin-bottom: 20px; }
   .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
 
-  /* textarea for import */
-  textarea.import-area {
-    width: 100%;
-    height: 120px;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 10px;
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    resize: none;
-    outline: none;
-    background: var(--bg);
-    color: var(--ink);
-    margin-bottom: 12px;
-  }
-
   /* toast */
   #toast {
     position: fixed;
@@ -997,11 +981,16 @@
 <div class="modal-overlay" id="modal-import">
   <div class="modal">
     <div class="modal-title">Import backup</div>
-    <div class="modal-body">Paste your exported JSON below. This will <strong>replace</strong> all existing history.</div>
-    <textarea class="import-area" id="import-textarea" placeholder='{"sessions": [...]}'></textarea>
+    <div class="modal-body">Select your exported JSON backup file. This will <strong>replace</strong> all existing history.</div>
+    <input type="file" id="import-file-input" accept=".json,application/json"
+      style="display:none">
+    <button class="btn ghost" id="import-file-btn" style="width:100%;margin-bottom:12px;justify-content:center;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+      <span id="import-file-label">Choose file…</span>
+    </button>
     <div class="modal-actions">
       <button class="btn ghost" id="modal-import-cancel">Cancel</button>
-      <button class="btn" id="modal-import-confirm">Import</button>
+      <button class="btn" id="modal-import-confirm" disabled>Import</button>
     </div>
   </div>
 </div>
@@ -1599,22 +1588,46 @@ document.getElementById('btn-export').addEventListener('click', () => {
 });
 
 document.getElementById('btn-import').addEventListener('click', () => {
-  document.getElementById('import-textarea').value = '';
+  // Reset state each time modal opens
+  document.getElementById('import-file-input').value = '';
+  document.getElementById('import-file-label').textContent = 'Choose file…';
+  document.getElementById('modal-import-confirm').disabled = true;
   openModal('modal-import');
 });
+
+// Clicking the styled button triggers the hidden file input
+document.getElementById('import-file-btn').addEventListener('click', () => {
+  document.getElementById('import-file-input').click();
+});
+
+// When a file is selected, update the label and enable confirm
+document.getElementById('import-file-input').addEventListener('change', () => {
+  const file = document.getElementById('import-file-input').files[0];
+  if (file) {
+    document.getElementById('import-file-label').textContent = file.name;
+    document.getElementById('modal-import-confirm').disabled = false;
+  }
+});
+
 document.getElementById('modal-import-cancel').addEventListener('click', () => closeModal('modal-import'));
 document.getElementById('modal-import-confirm').addEventListener('click', () => {
-  try {
-    const raw = document.getElementById('import-textarea').value.trim();
-    const parsed = JSON.parse(raw);
-    if (!parsed.sessions || !Array.isArray(parsed.sessions)) throw new Error('Invalid format');
-    saveSessions(parsed.sessions);
-    closeModal('modal-import');
-    renderHistory();
-    toast(`Imported ${parsed.sessions.length} sessions`);
-  } catch {
-    toast('Invalid JSON — check format');
-  }
+  const file = document.getElementById('import-file-input').files[0];
+  if (!file) { toast('No file selected'); return; }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      if (!parsed.sessions || !Array.isArray(parsed.sessions)) throw new Error('Invalid format');
+      saveSessions(parsed.sessions);
+      closeModal('modal-import');
+      renderHistory();
+      toast(`Imported ${parsed.sessions.length} sessions`);
+    } catch {
+      toast('Invalid file — check format');
+    }
+  };
+  reader.onerror = () => toast('Could not read file');
+  reader.readAsText(file);
 });
 
 /* ═══════════════════════════════════════
