@@ -1053,7 +1053,10 @@ function getCurrent() {
 function saveCurrent(c) { localStorage.setItem(SK.current, JSON.stringify(c)); }
 
 function todayStr() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  return `${d.getFullYear()}-${mm}-${dd}`;
 }
 function fmtDate(iso) {
   const d = new Date(iso + 'T00:00:00');
