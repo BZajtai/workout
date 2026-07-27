@@ -633,20 +633,20 @@
     gap: 2px;
   }
   .sheet-card .last-session {
-    font-size: 9px;
+    font-size: 11px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 100%;
   }
   .sheet-card .toggle-btn {
-    font-size: 9px;
+    font-size: 11px;
   }
   .sheet-card .ex-history-expanded {
     padding: 0 10px 8px;
   }
-  .sheet-card .history-row .h-date { font-size: 9px; }
-  .sheet-card .history-row .h-val  { font-size: 9px; }
+  .sheet-card .history-row .h-date { font-size: 11px; }
+  .sheet-card .history-row .h-val  { font-size: 11px; }
 
   /* ── util ── */
   .divider { height: 1px; background: var(--border-lt); margin: 0 20px; }
@@ -1005,7 +1005,7 @@
 ═══════════════════════════════════════════════ */
 const EXERCISES = [
    // ── Chest ──
-  { id: "converging_bench_press", name: "Converging Bench Press", category: "Chest",     icon: "icons/converging_bench_press.png" },
+  { id: "converging_chest_press", name: "Converging Chest Press", category: "Chest",     icon: "icons/converging_bench_press.png" },
   { id: "chest_fly",              name: "Dumbbell Chest Fly",     category: "Chest",     icon: "icons/chest_fly.png" },
   { id: "pec_fly",                name: "Machine Pec Fly",        category: "Chest",     icon: "icons/pec_fly.png" },
   { id: "pushups",                name: "Pushups",                category: "Chest",     icon: "icons/push-up.png",          type: "count" },
@@ -1015,7 +1015,7 @@ const EXERCISES = [
   { id: "seated_row",             name: "Diverging Seated Row",   category: "Back",      icon: "icons/seated-row.png" },
   { id: "back_fly",               name: "Dumbbell Reverse Fly",   category: "Back",      icon: "icons/back_fly.png" },
   // ── Shoulders ──
-  { id: "ohp",                    name: "Diverging Shoulder Press", category: "Shoulders", icon: "icons/shoulder-press.png" },
+  { id: "shoulder_press",                    name: "Converging Shoulder Press", category: "Shoulders", icon: "icons/shoulder-press.png" },
   //{ id: "cable_front_raise",      name: "Cable Front Raise",        category: "Shoulders", icon: "icons/cable_front_raise.png" },
   { id: "cable_punch",            name: "Cable Punch",              category: "Shoulders", icon: "icons/cable_punch.png" },
   // ── Arms ──
@@ -1027,14 +1027,16 @@ const EXERCISES = [
   { id: "leg_press",              name: "Leg Press",              category: "Legs",      icon: "icons/leg-press-machine.png" },
   { id: "outer_thigh",            name: "Outer Thigh",            category: "Legs",      icon: "icons/abductor.png" },
   { id: "inner_thigh",            name: "Inner Thigh",            category: "Legs",      icon: "icons/adductor.png" },
-  { id: "squats",                 name: "Squats",                 category: "Legs",      icon: "icons/squats.png",          type: "count" },
+  { id: "squats",                 name: "Squats",                 category: "Legs",      icon: "icons/squat.png",          type: "count" },
   { id: "lunges",                 name: "Lunges",                 category: "Legs",      icon: "icons/lunges.png",          type: "count" },
+  { id: "weighted_squat",         name: "Weighted Squat",         category: "Legs",      icon: "icons/squats.png",          type: "count" },
   // ── Core ──
   { id: "plank",                  name: "Plank",                  category: "Core",      icon: "icons/plank.png",           type: "timed" },
+  { id: "side_plank",             name: "Side Plank",             category: "Core",      icon: "icons/side-plank.png",           type: "timed" },
   // ── Cardio ──
-  { id: "rowing",                 name: "Rowing",                 category: "Cardio",    icon: "icons/rowing.png",          fields: ["duration", "distance"] },
+  { id: "rowing",                 name: "Rowing",                 category: "Cardio",    icon: "icons/rowing.png",          fields: ["duration", "distance", "rounds"] },
   { id: "elliptical",             name: "Elliptical",             category: "Cardio",    icon: "icons/elliptical.png",      fields: ["duration", "distance"] },
-  { id: "treadmill",              name: "Treadmill",              category: "Cardio",    icon: "icons/treadmill.png",       fields: ["duration", "distance"] },
+  { id: "treadmill",              name: "Treadmill",              category: "Cardio",    icon: "icons/treadmill.png",       fields: ["duration", "distance", "rounds", "notes"] },
   // ── Class ──
   { id: "pilates",                name: "Pilates",                category: "Core",      icon: "icons/pilates.png", "type":"class" },
   { id: "yoga",                   name: "Yoga",                   category: "Core",      icon: "icons/yoga.png", "type":"class" },
@@ -1211,7 +1213,7 @@ function hasData(id) {
   if (!d) return false;
   const ex = exerciseMap[id];
   if (ex && ex.type === 'class') return !!d.done;
-  return !!(d.sets || d.reps || d.weight || d.duration || d.distance);
+  return !!(d.sets || d.reps || d.weight || d.duration || d.distance || d.rounds || d.notes);
 }
 
 function updateCatCount(cat) {
@@ -1233,6 +1235,8 @@ function renderSheetCard(ex, container) {
   const isCount = ex.type === 'count';
   const isClass = ex.type === 'class';
   const hasDistance = Array.isArray(ex.fields) && ex.fields.includes('distance');
+  const hasRounds   = Array.isArray(ex.fields) && ex.fields.includes('rounds');
+  const hasNotes    = Array.isArray(ex.fields) && ex.fields.includes('notes');
 
   const iconHtml = ex.icon.startsWith('http') || ex.icon.startsWith('/') || ex.icon.startsWith('data:') || ex.icon.startsWith('icons/')
     ? `<img src="${ex.icon}" alt="">`
@@ -1244,6 +1248,8 @@ function renderSheetCard(ex, container) {
       const parts = [];
       if (h.duration) parts.push(h.duration);
       if (h.distance) parts.push(`${h.distance}km`);
+      if (h.rounds) parts.push(`${h.rounds}r`);
+      if (h.notes) parts.push(h.notes);
       return parts.length ? parts.join(' · ') : '—';
     }
     if (isCount) {
@@ -1290,7 +1296,7 @@ function renderSheetCard(ex, container) {
         </div>
       </div>`
     : isTimed
-    ? `<div class="exercise-inputs" style="grid-template-columns:${hasDistance ? '1fr 1fr' : '1fr'}">
+    ? `<div class="exercise-inputs" style="grid-template-columns:${[hasDistance, hasRounds].filter(Boolean).length === 2 ? '1fr 1fr 1fr' : (hasDistance || hasRounds) ? '1fr 1fr' : '1fr'}">
         <div class="input-cell">
           <label>Duration</label>
           <input type="text" inputmode="numeric" placeholder="—" data-field="duration" value="${data.duration || ''}" style="font-size:20px">
@@ -1299,7 +1305,15 @@ function renderSheetCard(ex, container) {
           <label>Dist. km</label>
           <input type="number" inputmode="decimal" min="0" step="0.1" placeholder="—" data-field="distance" value="${data.distance || ''}" style="font-size:20px">
         </div>` : ''}
-      </div>`
+        ${hasRounds ? `<div class="input-cell">
+          <label>Rounds</label>
+          <input type="number" inputmode="numeric" min="1" placeholder="—" data-field="rounds" value="${data.rounds || ''}" style="font-size:20px">
+        </div>` : ''}
+      </div>
+      ${hasNotes ? `<div style="padding:4px 8px 6px;border-top:1px solid var(--border-lt)">
+        <input type="text" placeholder="Notes…" data-field="notes" value="${data.notes || ''}"
+          style="width:100%;border:none;background:transparent;font-family:'DM Mono',monospace;font-size:10px;color:var(--ink-2);outline:none;padding:4px 2px;">
+      </div>` : ''}`
     : isCount
     ? `<div class="exercise-inputs" style="grid-template-columns:1fr 1fr">
         <div class="input-cell">
@@ -1517,6 +1531,8 @@ function renderHistory() {
           const parts = [];
           if (e.duration) parts.push(e.duration);
           if (e.distance) parts.push(`${e.distance}km`);
+          if (e.rounds) parts.push(`${e.rounds}r`);
+          if (e.notes) parts.push(e.notes);
           return parts.length ? parts.join(' · ') : '—';
         }
         const parts = [];
@@ -1786,6 +1802,8 @@ function showPeek(session) {
           const parts = [];
           if (e.duration) parts.push(e.duration);
           if (e.distance) parts.push(`${e.distance}km`);
+          if (e.rounds) parts.push(`${e.rounds}r`);
+          if (e.notes) parts.push(e.notes);
           return parts.length ? parts.join(' · ') : '—';
         }
         const parts = [];
