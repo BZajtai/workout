@@ -1038,7 +1038,7 @@ const EXERCISES = [
   { id: "elliptical",             name: "Elliptical",             category: "Cardio",    icon: "icons/elliptical.png",      fields: ["duration", "distance"] },
   { id: "treadmill",              name: "Treadmill",              category: "Cardio",    icon: "icons/treadmill.png",       fields: ["duration", "distance", "rounds", "notes"] },
   // ── Class ──
-  { id: "egym",               name: "egym-circuit",              category: "Workout",   icon: "icons/fitness.png", "type":"class", fields: ["duration", "rounds"] },
+  { id: "egym_circuit",           name: "eGym Circuit",           category: "Cardio",   icon: "icons/fitness.png", fields: ["duration", "rounds"] },
   { id: "pilates",                name: "Pilates",                category: "Core",      icon: "icons/pilates.png", "type":"class" },
   { id: "yoga",                   name: "Yoga",                   category: "Core",      icon: "icons/yoga.png", "type":"class" },
   { id: "swim",                   name: "Swim",                   category: "Cardio",    icon: "icons/swimming.png" , "type":"class"},
@@ -1234,6 +1234,7 @@ function renderSheetCard(ex, container) {
 
   const isTimed = ex.category === 'Cardio' || ex.type === 'timed';
   const isCount = ex.type === 'count';
+  
   const isClass = ex.type === 'class';
   const hasDistance = Array.isArray(ex.fields) && ex.fields.includes('distance');
   const hasRounds   = Array.isArray(ex.fields) && ex.fields.includes('rounds');
